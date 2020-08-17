@@ -382,13 +382,96 @@ summary {
 
 
 <p>#libraries</p>
-<p>#Cumulative cases in the 5 worst counties</p>
+<p>#Calculating the new cases in each county</p>
 <pre class="r"><code>data = covid %&gt;%
   filter(state == &quot;California&quot;) %&gt;%
   group_by(county) %&gt;% 
-  mutate(newCases = cases - lag(cases)) %&gt;%
-  ungroup()</code></pre>
-<p>#total NEW cases in the 5 worst counties</p>
+  mutate(Ncases = cases - lag(cases)) %&gt;% #calculate the new cases
+  ungroup()
+
+Nday = data %&gt;% #find the most recent date
+  filter(date == max(date))</code></pre>
+<p>#Cumulative cases in the 5 worst counties</p>
+<pre class="r"><code>mcumulcases = data %&gt;%
+  filter(date == max(date)) %&gt;%
+  select(county, cases) %&gt;% 
+  slice_max(cases, n = 5)
+
+knitr::kable(mcumulcases, 
+             caption = &quot;Most Cumulative Cases in California Counties&quot;,
+             col.names = c(&quot;County&quot;, &quot;New Cases&quot;),
+             format.args = list(big.mark = &quot;,&quot;))</code></pre>
+<table>
+<caption>Most Cumulative Cases in California Counties</caption>
+<thead>
+<tr class="header">
+<th align="left">County</th>
+<th align="right">New Cases</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Los Angeles</td>
+<td align="right">208,528</td>
+</tr>
+<tr class="even">
+<td align="left">Riverside</td>
+<td align="right">41,412</td>
+</tr>
+<tr class="odd">
+<td align="left">Orange</td>
+<td align="right">39,641</td>
+</tr>
+<tr class="even">
+<td align="left">San Bernardino</td>
+<td align="right">35,712</td>
+</tr>
+<tr class="odd">
+<td align="left">San Diego</td>
+<td align="right">32,810</td>
+</tr>
+</tbody>
+</table>
+<p>#New cases in the 5 worst counties</p>
+<pre class="r"><code>mnewcases = Nday %&gt;%
+  select(county, Ncases) %&gt;% 
+  slice_max(Ncases, n = 5)
+
+knitr::kable(mnewcases, 
+             caption = &quot;Most New Cases in California Counties&quot;,
+             col.names = c(&quot;County&quot;, &quot;New Cases&quot;),
+             format.args = list(big.mark = &quot;,&quot;))</code></pre>
+<table>
+<caption>Most New Cases in California Counties</caption>
+<thead>
+<tr class="header">
+<th align="left">County</th>
+<th align="right">New Cases</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Los Angeles</td>
+<td align="right">1,767</td>
+</tr>
+<tr class="even">
+<td align="left">Kern</td>
+<td align="right">957</td>
+</tr>
+<tr class="odd">
+<td align="left">Orange</td>
+<td align="right">565</td>
+</tr>
+<tr class="even">
+<td align="left">Riverside</td>
+<td align="right">510</td>
+</tr>
+<tr class="odd">
+<td align="left">San Diego</td>
+<td align="right">417</td>
+</tr>
+</tbody>
+</table>
 
 
 

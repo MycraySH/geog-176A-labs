@@ -15,12 +15,37 @@ library(zoo)
 covid = read_csv("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/covid.csv")
 pop <- read_excel("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/PopulationEstimates.xlsx", skip = 2)
 ```
-#Cumulative cases in the 5 worst counties
+#Calculating the new cases in each county
 ```{r,message=FALSE, warning=FALSE}
 data = covid %>%
   filter(state == "California") %>%
   group_by(county) %>% 
-  mutate(newCases = cases - lag(cases)) %>%
+  mutate(Ncases = cases - lag(cases)) %>% #calculate the new cases
   ungroup()
+
+Nday = data %>% #find the most recent date
+  filter(date == max(date))
 ```
-#total NEW cases in the 5 worst counties
+#Cumulative cases in the 5 worst counties
+``` {r, message = FALSE, warning = FALSE}
+mcumulcases = data %>%
+  filter(date == max(date)) %>%
+  select(county, cases) %>% 
+  slice_max(cases, n = 5)
+
+knitr::kable(mcumulcases, 
+             caption = "Most Cumulative Cases in California Counties",
+             col.names = c("County", "New Cases"),
+             format.args = list(big.mark = ","))
+``` 
+#New cases in the 5 worst counties
+``` {r, message = FALSE, warning = FALSE}
+mnewcases = Nday %>%
+  select(county, Ncases) %>% 
+  slice_max(Ncases, n = 5)
+
+knitr::kable(mnewcases, 
+             caption = "Most New Cases in California Counties",
+             col.names = c("County", "New Cases"),
+             format.args = list(big.mark = ","))
+```
