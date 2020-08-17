@@ -10,32 +10,32 @@ output:
 ```{r library,include=FALSE}
 library(tidyverse)
 library(knitr)
-library(readxl)
 library(zoo)
+library(readxl)
 covid = read_csv("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/covid.csv")
-pop <- read_excel("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/PopulationEstimates.xlsx", skip = 2)
+pop <- read_excel("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/PopulationEstimates.xls", skip = 2)
 ```
 #Calculating the new cases in each county
 ```{r,message=FALSE, warning=FALSE}
-data = covid %>%
+casedata = covid %>%
   filter(state == "California") %>%
   group_by(county) %>% 
   mutate(Ncases = cases - lag(cases)) %>% #calculate the new cases
   ungroup()
 
-Nday = data %>% #find the most recent date
+Nday = casedata %>% #find the most recent date
   filter(date == max(date))
 ```
 #Cumulative cases in the 5 worst counties
 ``` {r, message = FALSE, warning = FALSE}
-mcumulcases = data %>%
+mcumulcases = casedata %>%
   filter(date == max(date)) %>%
   select(county, cases) %>% 
   slice_max(cases, n = 5)
 
 knitr::kable(mcumulcases, 
-             caption = "Most Cumulative Cases in California Counties",
-             col.names = c("County", "New Cases"),
+             caption = "Most cumulative cases in california counties",
+             col.names = c("County", "Cumulative Cases"),
              format.args = list(big.mark = ","))
 ``` 
 #New cases in the 5 worst counties
@@ -45,7 +45,52 @@ mnewcases = Nday %>%
   slice_max(Ncases, n = 5)
 
 knitr::kable(mnewcases, 
-             caption = "Most New Cases in California Counties",
+             caption = "Most new cases in California counties",
              col.names = c("County", "New Cases"),
              format.args = list(big.mark = ","))
 ```
+#Update case data based on population data
+```{r message=FALSE, warning=FALSE}
+pop_capita = pop %>%
+  select(fiptext = "FIPStxt",newpop ="POP_ESTIMATE_2019",state = "State") %>%
+  left_join(casedata, by = "fiptext") %>%
+  mutate(cumul_cases_pcapita = (cases/newpop), new_cases_pcapita = (Ncases/newpop))
+
+```
+#The most cumulative cases per capita
+```{r, message = FALSE, warning = FALSE}
+cumul_capita = pop_capita %>%
+    filter(date == max(date)) %>%
+    slice_max(cases, n = 5) %>%
+    select(county, cumul_cases_pcapita)
+
+knitr::kable(cumul_capita,
+             caption = "The most cumulative cases per capita in California Counties", 
+             col.names = c("County", "Cumulative cases per capita"), 
+             format.args = list(big.mark = ",")) 
+```
+#The most New cases per capita
+```{r, message = FALSE, warning = FALSE}
+new_capita = pop_capita %>%
+    filter(date == max(date)) %>%
+    slice_max(cases, n = 5) %>%
+    select(county, new_cases_pcapita)
+
+knitr::kable(new_capita,
+             caption = "The most new cases per capita in California Counties", 
+             col.names = c("County", "New cases per capita"), 
+             format.args = list(big.mark = ","))
+```
+
+#Safe Counties
+```{r, message = FALSE, warning = FALSE}
+safecounties = pop_capita %>%
+  group_by(county, newpop) %>%
+  summarise(totalnew = sum(Ncases, na.rm = TRUE)) %>% 
+  mutate(total_safecounties = totalnew/(pop2019/100000)) %>% 
+  filter(total_safecounties < 100)
+
+##results 
+The total number of cases in California is `r sum(today$cases)`, which `r sum(today$cases)` of the population are new cases. Safe counties in California are listed as following:`r nrow(safecounties)`
+
+
