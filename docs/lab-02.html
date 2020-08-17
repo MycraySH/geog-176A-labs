@@ -383,52 +383,52 @@ summary {
 
 <p>#libraries</p>
 <p>#Calculating the new cases in each county</p>
-<pre class="r"><code>data = covid %&gt;%
+<pre class="r"><code>casedata = covid %&gt;%
   filter(state == &quot;California&quot;) %&gt;%
   group_by(county) %&gt;% 
   mutate(Ncases = cases - lag(cases)) %&gt;% #calculate the new cases
   ungroup()
 
-Nday = data %&gt;% #find the most recent date
+Nday = casedata %&gt;% #find the most recent date
   filter(date == max(date))</code></pre>
 <p>#Cumulative cases in the 5 worst counties</p>
-<pre class="r"><code>mcumulcases = data %&gt;%
+<pre class="r"><code>mcumulcases = casedata %&gt;%
   filter(date == max(date)) %&gt;%
   select(county, cases) %&gt;% 
   slice_max(cases, n = 5)
 
 knitr::kable(mcumulcases, 
-             caption = &quot;Most Cumulative Cases in California Counties&quot;,
-             col.names = c(&quot;County&quot;, &quot;New Cases&quot;),
+             caption = &quot;Most cumulative cases in california counties&quot;,
+             col.names = c(&quot;County&quot;, &quot;Cumulative Cases&quot;),
              format.args = list(big.mark = &quot;,&quot;))</code></pre>
 <table>
-<caption>Most Cumulative Cases in California Counties</caption>
+<caption>Most cumulative cases in california counties</caption>
 <thead>
 <tr class="header">
 <th align="left">County</th>
-<th align="right">New Cases</th>
+<th align="right">Cumulative Cases</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="left">Los Angeles</td>
-<td align="right">208,528</td>
+<td align="right">221,950</td>
 </tr>
 <tr class="even">
 <td align="left">Riverside</td>
-<td align="right">41,412</td>
+<td align="right">46,720</td>
 </tr>
 <tr class="odd">
 <td align="left">Orange</td>
-<td align="right">39,641</td>
+<td align="right">43,709</td>
 </tr>
 <tr class="even">
 <td align="left">San Bernardino</td>
-<td align="right">35,712</td>
+<td align="right">41,231</td>
 </tr>
 <tr class="odd">
 <td align="left">San Diego</td>
-<td align="right">32,810</td>
+<td align="right">34,741</td>
 </tr>
 </tbody>
 </table>
@@ -438,11 +438,11 @@ knitr::kable(mcumulcases,
   slice_max(Ncases, n = 5)
 
 knitr::kable(mnewcases, 
-             caption = &quot;Most New Cases in California Counties&quot;,
+             caption = &quot;Most new cases in California counties&quot;,
              col.names = c(&quot;County&quot;, &quot;New Cases&quot;),
              format.args = list(big.mark = &quot;,&quot;))</code></pre>
 <table>
-<caption>Most New Cases in California Counties</caption>
+<caption>Most new cases in California counties</caption>
 <thead>
 <tr class="header">
 <th align="left">County</th>
@@ -452,26 +452,120 @@ knitr::kable(mnewcases,
 <tbody>
 <tr class="odd">
 <td align="left">Los Angeles</td>
-<td align="right">1,767</td>
+<td align="right">1,188</td>
 </tr>
 <tr class="even">
-<td align="left">Kern</td>
-<td align="right">957</td>
+<td align="left">San Bernardino</td>
+<td align="right">789</td>
+</tr>
+<tr class="odd">
+<td align="left">Fresno</td>
+<td align="right">703</td>
+</tr>
+<tr class="even">
+<td align="left">Sacramento</td>
+<td align="right">373</td>
 </tr>
 <tr class="odd">
 <td align="left">Orange</td>
-<td align="right">565</td>
-</tr>
-<tr class="even">
-<td align="left">Riverside</td>
-<td align="right">510</td>
-</tr>
-<tr class="odd">
-<td align="left">San Diego</td>
-<td align="right">417</td>
+<td align="right">342</td>
 </tr>
 </tbody>
 </table>
+<p>#Update case data based on population data</p>
+<pre class="r"><code>pop_capita = pop %&gt;%
+  select(fips = &quot;FIPStxt&quot;,newpop =&quot;POP_ESTIMATE_2019&quot;,state = &quot;State&quot;) %&gt;%
+  right_join(casedata, by = &quot;fips&quot;) %&gt;%
+  mutate(cumul_cases_pcapita = (cases/newpop), new_cases_pcapita = (Ncases/newpop))</code></pre>
+<p>#The most cumulative cases per capita</p>
+<pre class="r"><code>cumul_capita = pop_capita %&gt;%
+    filter(date == max(date)) %&gt;%
+    slice_max(cases, n = 5) %&gt;%
+    select(county, cumul_cases_pcapita)
+
+knitr::kable(cumul_capita,
+             caption = &quot;The most cumulative cases per capita in California Counties&quot;, 
+             col.names = c(&quot;County&quot;, &quot;Cumulative cases per capita&quot;), 
+             format.args = list(big.mark = &quot;,&quot;)) </code></pre>
+<table>
+<caption>The most cumulative cases per capita in California Counties</caption>
+<thead>
+<tr class="header">
+<th align="left">County</th>
+<th align="right">Cumulative cases per capita</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Los Angeles</td>
+<td align="right">0.0221085</td>
+</tr>
+<tr class="even">
+<td align="left">Riverside</td>
+<td align="right">0.0189108</td>
+</tr>
+<tr class="odd">
+<td align="left">Orange</td>
+<td align="right">0.0137636</td>
+</tr>
+<tr class="even">
+<td align="left">San Bernardino</td>
+<td align="right">0.0189126</td>
+</tr>
+<tr class="odd">
+<td align="left">San Diego</td>
+<td align="right">0.0104067</td>
+</tr>
+</tbody>
+</table>
+<p>#The most New cases per capita</p>
+<pre class="r"><code>new_capita = pop_capita %&gt;%
+    filter(date == max(date)) %&gt;%
+    slice_max(cases, n = 5) %&gt;%
+    select(county, new_cases_pcapita)
+
+knitr::kable(new_capita,
+             caption = &quot;The most new cases per capita in California Counties&quot;, 
+             col.names = c(&quot;County&quot;, &quot;New cases per capita&quot;), 
+             format.args = list(big.mark = &quot;,&quot;))</code></pre>
+<table>
+<caption>The most new cases per capita in California Counties</caption>
+<thead>
+<tr class="header">
+<th align="left">County</th>
+<th align="right">New cases per capita</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Los Angeles</td>
+<td align="right">0.0001183</td>
+</tr>
+<tr class="even">
+<td align="left">Riverside</td>
+<td align="right">0.0001069</td>
+</tr>
+<tr class="odd">
+<td align="left">Orange</td>
+<td align="right">0.0001077</td>
+</tr>
+<tr class="even">
+<td align="left">San Bernardino</td>
+<td align="right">0.0003619</td>
+</tr>
+<tr class="odd">
+<td align="left">San Diego</td>
+<td align="right">0.0001001</td>
+</tr>
+</tbody>
+</table>
+<p>#Safe Counties</p>
+<pre class="r"><code>safecounties = pop_capita %&gt;%
+  group_by(county, newpop) %&gt;%
+  summarise(totalnew = sum(Ncases, na.rm = TRUE)) %&gt;% 
+  mutate(safecountiesname = totalnew/(newpop/100000)) %&gt;% 
+  filter(safecountiesname &lt; 100)</code></pre>
+<p>##results The total number of cases in California is 6.2850810^{5}, which 6527 of the population are new cases. Safe counties in California are listed as following:3 ```</p>
 
 
 
