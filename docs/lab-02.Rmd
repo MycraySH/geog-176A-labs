@@ -53,7 +53,7 @@ knitr::kable(mnewcases,
 ```{r message=FALSE, warning=FALSE}
 pop_capita = pop %>%
   select(fiptext = "FIPStxt",newpop ="POP_ESTIMATE_2019",state = "State") %>%
-  left_join(casedata, by = "fiptext") %>%
+  right_join(casedata, by = "fiptext") %>%
   mutate(cumul_cases_pcapita = (cases/newpop), new_cases_pcapita = (Ncases/newpop))
 
 ```
@@ -87,10 +87,10 @@ knitr::kable(new_capita,
 safecounties = pop_capita %>%
   group_by(county, newpop) %>%
   summarise(totalnew = sum(Ncases, na.rm = TRUE)) %>% 
-  mutate(total_safecounties = totalnew/(pop2019/100000)) %>% 
-  filter(total_safecounties < 100)
-
+  mutate(safecounties = totalnew/(newpop/100000)) %>% 
+  filter(safecounties < 100)
+```
 ##results 
 The total number of cases in California is `r sum(today$cases)`, which `r sum(today$cases)` of the population are new cases. Safe counties in California are listed as following:`r nrow(safecounties)`
-
+```
 
