@@ -1,8 +1,26 @@
 ---
 title: "Geography 176A"
-author: "[Mike Johnson](https://mikejohnson51.github.io)"
+author: "[Stone Shi](https://mycraysh.github.io/StoneGIS/)"
 subtitle: 'Lab 03: COVID-19 Pandemic'
 output:
   html_document:
     theme: journal
 ---
+#libraries
+```{r library,include=FALSE}
+library(tidyverse)
+library(knitr)
+library(readxl)
+library(zoo)
+covid = read_csv("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/covid.csv")
+pop <- read_excel("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/PopulationEstimates.xlsx", skip = 2)
+```
+#Cumulative cases in the 5 worst counties
+```{r,message=FALSE, warning=FALSE}
+data = covid %>%
+  filter(state == "California") %>%
+  group_by(county) %>% 
+  mutate(newCases = cases - lag(cases)) %>%
+  ungroup()
+```
+#total NEW cases in the 5 worst counties
