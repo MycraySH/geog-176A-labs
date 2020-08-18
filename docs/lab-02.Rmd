@@ -83,12 +83,14 @@ knitr::kable(new_capita,
 ```
 #recent 14 days data
 ```{r, message = FALSE, warning = FALSE}
-covid14d = pop_capita %>% 
-  group_by(county) %>% 
-  mutate(totalncases = rollsum(ncases, 13, fill = NA, align = "right")) %>% 
-  filter(date >= max(date) - 13)
-  ungroup() %>% 
-  summarise(totalncases)
+covid_pcap = right_join(pop_capita, casedata, by = "fips") %>% 
+  (recent14= covid_pcap %>%
+  filter(date >= max(date) - 13) %>%
+  select(county = county.y, Ncases, newpop, date) %>%
+  group_by(county, newpop) %>%
+  summarise(Ncases14 = sum(Ncases, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(cumul_milion = (newpop/100000), new_milion = (newpop/cumul_milion)))
 ```
 #Safe Counties
 ```{r, message = FALSE, warning = FALSE}
@@ -102,3 +104,46 @@ safecounties = pop_capita %>%
 The total number of cases in California is `r sum(Nday$cases)`, which `r sum(Nday$Ncases)` of the population are new cases. California has `r nrow(safecounties)` safe counties. 
 
 ##Question 2
+```{r, message = FALSE, warning = FALSE}
+
+covid2 = covid %>%
+  filter(state %in% c("California", "New York", "Louisiana", "Florida")) %>%
+  group_by(state, date) %>%
+  summarise(cases = sum(cases, na.rn = TRUE)) %>%
+  mutate(NScases = cases - lag(cases), averagedaily = rollmean(NScases, 7, fill = NA, align = "right")) %>%
+  ungroup() %>%
+  filter(NScases >= 0)
+```
+#State level new cases
+```{r, message = FALSE, warning = FALSE}
+covid2 %>% 
+  ggplot(aes(x = as.Date(date))) +
+  geom_col(aes(y = NScases, col = state)) +
+  geom_line(aes(y = averagedaily), size = 1, col = "purple") +
+  facet_wrap(~state, scales = 'free_y') +
+  labs(title = "State level New COVID Cases",
+       x = "",
+       y = "",
+       caption = "NY Times COVID Data",
+       subtitle = "7-day Average") +
+  theme_dark() +
+  theme(legend.position = "NA")
+```
+#State level new cases per capita
+```{r, message = FALSE, warning = FALSE}
+covid2  %>% 
+  ggplot(aes(x = date)) +
+  geom_col(aes(y = new_states_cases, col = state)) +
+  geom_line(aes(y = dailymean), size = 1, col = "blue") +
+  facet_wrap(~state, scales = 'free_y') +
+  labs(title = "New COVID Cases by State",
+       x = "",
+       y = "",
+       caption = "NY Times COVID Data",
+       subtitle = "7-day Average (Blue)") +
+  theme_dark() +
+  theme(legend.position = "NA") ->
+  lab2plot
+ggsave(lab2plot, file = "lab2plot.png",
+       width = 8,
+       unit = "in")
