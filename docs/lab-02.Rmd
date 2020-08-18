@@ -85,12 +85,12 @@ knitr::kable(new_capita,
 ```{r, message = FALSE, warning = FALSE}
 covid_pcap = right_join(pop_capita, casedata, by = "fips") %>% 
   (recent14= covid_pcap %>%
-  filter(date >= max(date) - 13) %>%
-  select(county = county.y, Ncases, newpop, date) %>%
-  group_by(county, newpop) %>%
-  summarise(Ncases14 = sum(Ncases, na.rm = TRUE)) %>%
-  ungroup() %>%
-  mutate(cumul_milion = (newpop/100000), new_milion = (newpop/cumul_milion)))
+     filter(date >= max(date) - 13) %>%
+     select(county = county.y, Ncases, newpop, date) %>%
+     group_by(county, newpop) %>%
+     summarise(Ncases14 = sum(Ncases, na.rm = TRUE)) %>%
+     ungroup() %>%
+     mutate(new_milion = (newpop/(newpop/100000))))
 ```
 #Safe Counties
 ```{r, message = FALSE, warning = FALSE}
