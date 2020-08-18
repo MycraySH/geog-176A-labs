@@ -127,22 +127,19 @@ covid2 %>%
        subtitle = "7-day Average New Cases") +
   theme_dark() +
   theme(legend.position = "NA")
-
 ```
 #State level new cases
 ```{r, message = FALSE, warning = FALSE}
-covid2  %>% 
+covid2 %>% 
   ggplot(aes(x = as.Date(date), y=NScases)) +
-  geom_col(aes(y = NScases, col = state)) +
+  geom_col(aes(y = NSCases, col = state)) +
   geom_line(aes(y = averagedaily), size = 1, col = "blue") +
   facet_wrap(~state, scales = 'free_y') +
   labs(title = "New COVID Cases by State",
        x = "",
        y = "",
        caption = "NY Times COVID Data",
-       subtitle = "7-day Average") +
+       subtitle = "7day Average") +
   theme_dark() +
-  theme(legend.position = "NA"）
-  labplot2
-
+  theme(legend.position = "NA")
 ```
