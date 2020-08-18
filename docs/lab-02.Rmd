@@ -51,7 +51,7 @@ knitr::kable(mnewcases,
 ```
 #Update case data based on population data
 ```{r message=FALSE, warning=FALSE}
-pop_capita = pop %>%
+popcapita = pop %>%
   select(fips = "FIPStxt",newpop ="POP_ESTIMATE_2019",state = "State") %>%
   right_join(casedata, by = "fips") %>%
   mutate(cumul_cases_pcapita = (cases/newpop), new_cases_pcapita = (Ncases/newpop))
@@ -59,7 +59,7 @@ pop_capita = pop %>%
 ```
 #The most cumulative cases per capita
 ```{r, message = FALSE, warning = FALSE}
-cumul_capita = pop_capita %>%
+cumul_capita = popcapita %>%
     filter(date == max(date)) %>%
     slice_max(cases, n = 5) %>%
     select(county, cumul_cases_pcapita)
@@ -71,7 +71,7 @@ knitr::kable(cumul_capita,
 ```
 #The most New cases per capita
 ```{r, message = FALSE, warning = FALSE}
-new_capita = pop_capita %>%
+new_capita = popcapita %>%
     filter(date == max(date)) %>%
     slice_max(cases, n = 5) %>%
     select(county, new_cases_pcapita)
@@ -83,18 +83,17 @@ knitr::kable(new_capita,
 ```
 #recent 14 days data
 ```{r, message = FALSE, warning = FALSE}
-covid_pcap = right_join(pop_capita, casedata, by = "fips")
-
-recent14 = covid_pcap %>%
-  select(county = county.y, Ncases, newpop, date) %>%
-  group_by(county, newpop) %>%
-  summarise(Ncases14 = sum(Ncases, na.rm = TRUE)) %>%
-  mutate(new_milion = (newpop/(newpop/100000))) %>% 
-  filter(date >= max(date) - 13)
+#covidpcap = right_join(popcapita, casedata, by = "fips")
+#recent14 = covidpcap %>%
+  #select(county = county.y, Ncases, newpop, date) %>%
+  #group_by(county, newpop) %>%
+  #summarise(Ncases14 = sum(Ncases, na.rm = TRUE)) %>%
+  #mutate(new_milion = (newpop/(newpop/100000))) %>% 
+  #filter(date >= max(date) - 13)-> 14cases
 ```
 #Safe Counties
 ```{r, message = FALSE, warning = FALSE}
-safecounties = pop_capita %>%
+safecounties = popcapita %>%
   group_by(county, newpop) %>%
   summarise(totalnew = sum(Ncases, na.rm = TRUE)) %>% 
   mutate(safecountiesname = totalnew/(newpop/100000)) %>% 
