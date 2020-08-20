@@ -473,15 +473,23 @@ knitr::kable(mnewcases,
 </tbody>
 </table>
 <p>#Update case data based on population data</p>
-<pre class="r"><code>popcapita = pop %&gt;%
+<pre class="r"><code>capita = pop %&gt;%
   select(fips = &quot;FIPStxt&quot;,newpop =&quot;POP_ESTIMATE_2019&quot;,state = &quot;State&quot;) %&gt;%
-  right_join(casedata, by = &quot;fips&quot;) %&gt;%
-  mutate(cumul_cases_pcapita = (cases/newpop), new_cases_pcapita = (Ncases/newpop))</code></pre>
+  right_join(covid, by = &quot;fips&quot;)
+
+  
+popcapita = capita %&gt;% 
+  filter(state.x == &quot;CA&quot;) %&gt;% 
+  group_by(county) %&gt;% 
+  mutate(Ncases2 = cases - lag(cases)) %&gt;% 
+  mutate(cumul_cases_pcapita = (cases/newpop)) %&gt;% 
+  mutate(new_cases_pcapita = (Ncases2/newpop))%&gt;% 
+  filter(date == max(date))</code></pre>
 <p>#The most cumulative cases per capita</p>
 <pre class="r"><code>cumul_capita = popcapita %&gt;%
-    filter(date == max(date)) %&gt;%
-    slice_max(cases, n = 5) %&gt;%
-    select(county, cumul_cases_pcapita)
+  slice_max(cases, n = 5) %&gt;%
+  arrange(-cumul_cases_pcapita) %&gt;% 
+  select(county, cumul_cases_pcapita)
 
 knitr::kable(cumul_capita,
              caption = &quot;The most cumulative cases per capita in California Counties&quot;, 
@@ -497,24 +505,236 @@ knitr::kable(cumul_capita,
 </thead>
 <tbody>
 <tr class="odd">
+<td align="left">Imperial</td>
+<td align="right">0.0555031</td>
+</tr>
+<tr class="even">
+<td align="left">Kings</td>
+<td align="right">0.0360534</td>
+</tr>
+<tr class="odd">
+<td align="left">Kern</td>
+<td align="right">0.0295156</td>
+</tr>
+<tr class="even">
+<td align="left">Tulare</td>
+<td align="right">0.0263023</td>
+</tr>
+<tr class="odd">
+<td align="left">Merced</td>
+<td align="right">0.0244058</td>
+</tr>
+<tr class="even">
+<td align="left">Lassen</td>
+<td align="right">0.0229941</td>
+</tr>
+<tr class="odd">
+<td align="left">Stanislaus</td>
+<td align="right">0.0227745</td>
+</tr>
+<tr class="even">
+<td align="left">Marin</td>
+<td align="right">0.0222968</td>
+</tr>
+<tr class="odd">
 <td align="left">Los Angeles</td>
 <td align="right">0.0221085</td>
+</tr>
+<tr class="even">
+<td align="left">Fresno</td>
+<td align="right">0.0206215</td>
+</tr>
+<tr class="odd">
+<td align="left">San Joaquin</td>
+<td align="right">0.0198295</td>
+</tr>
+<tr class="even">
+<td align="left">Colusa</td>
+<td align="right">0.0189818</td>
+</tr>
+<tr class="odd">
+<td align="left">San Bernardino</td>
+<td align="right">0.0189126</td>
 </tr>
 <tr class="even">
 <td align="left">Riverside</td>
 <td align="right">0.0189108</td>
 </tr>
 <tr class="odd">
+<td align="left">Madera</td>
+<td align="right">0.0187508</td>
+</tr>
+<tr class="even">
+<td align="left">Santa Barbara</td>
+<td align="right">0.0164345</td>
+</tr>
+<tr class="odd">
+<td align="left">Monterey</td>
+<td align="right">0.0148850</td>
+</tr>
+<tr class="even">
+<td align="left">Glenn</td>
+<td align="right">0.0140175</td>
+</tr>
+<tr class="odd">
 <td align="left">Orange</td>
 <td align="right">0.0137636</td>
 </tr>
 <tr class="even">
-<td align="left">San Bernardino</td>
-<td align="right">0.0189126</td>
+<td align="left">San Benito</td>
+<td align="right">0.0133104</td>
 </tr>
 <tr class="odd">
+<td align="left">Sutter</td>
+<td align="right">0.0117252</td>
+</tr>
+<tr class="even">
+<td align="left">Ventura</td>
+<td align="right">0.0110862</td>
+</tr>
+<tr class="odd">
+<td align="left">Mono</td>
+<td align="right">0.0110080</td>
+</tr>
+<tr class="even">
 <td align="left">San Diego</td>
 <td align="right">0.0104067</td>
+</tr>
+<tr class="odd">
+<td align="left">Solano</td>
+<td align="right">0.0102783</td>
+</tr>
+<tr class="even">
+<td align="left">Contra Costa</td>
+<td align="right">0.0097336</td>
+</tr>
+<tr class="odd">
+<td align="left">Yuba</td>
+<td align="right">0.0096354</td>
+</tr>
+<tr class="even">
+<td align="left">San Francisco</td>
+<td align="right">0.0094096</td>
+</tr>
+<tr class="odd">
+<td align="left">Yolo</td>
+<td align="right">0.0092789</td>
+</tr>
+<tr class="even">
+<td align="left">Alameda</td>
+<td align="right">0.0090862</td>
+</tr>
+<tr class="odd">
+<td align="left">San Mateo</td>
+<td align="right">0.0090689</td>
+</tr>
+<tr class="even">
+<td align="left">Sacramento</td>
+<td align="right">0.0090312</td>
+</tr>
+<tr class="odd">
+<td align="left">Napa</td>
+<td align="right">0.0089514</td>
+</tr>
+<tr class="even">
+<td align="left">Sonoma</td>
+<td align="right">0.0088543</td>
+</tr>
+<tr class="odd">
+<td align="left">San Luis Obispo</td>
+<td align="right">0.0086927</td>
+</tr>
+<tr class="even">
+<td align="left">Santa Clara</td>
+<td align="right">0.0074845</td>
+</tr>
+<tr class="odd">
+<td align="left">Inyo</td>
+<td align="right">0.0068186</td>
+</tr>
+<tr class="even">
+<td align="left">Placer</td>
+<td align="right">0.0065273</td>
+</tr>
+<tr class="odd">
+<td align="left">Butte</td>
+<td align="right">0.0064283</td>
+</tr>
+<tr class="even">
+<td align="left">Mendocino</td>
+<td align="right">0.0062364</td>
+</tr>
+<tr class="odd">
+<td align="left">Santa Cruz</td>
+<td align="right">0.0053219</td>
+</tr>
+<tr class="even">
+<td align="left">Amador</td>
+<td align="right">0.0052576</td>
+</tr>
+<tr class="odd">
+<td align="left">Tehama</td>
+<td align="right">0.0047938</td>
+</tr>
+<tr class="even">
+<td align="left">El Dorado</td>
+<td align="right">0.0043455</td>
+</tr>
+<tr class="odd">
+<td align="left">Lake</td>
+<td align="right">0.0041624</td>
+</tr>
+<tr class="even">
+<td align="left">Del Norte</td>
+<td align="right">0.0038113</td>
+</tr>
+<tr class="odd">
+<td align="left">Calaveras</td>
+<td align="right">0.0037904</td>
+</tr>
+<tr class="even">
+<td align="left">Nevada</td>
+<td align="right">0.0037692</td>
+</tr>
+<tr class="odd">
+<td align="left">Mariposa</td>
+<td align="right">0.0037203</td>
+</tr>
+<tr class="even">
+<td align="left">Tuolumne</td>
+<td align="right">0.0029370</td>
+</tr>
+<tr class="odd">
+<td align="left">Shasta</td>
+<td align="right">0.0027099</td>
+</tr>
+<tr class="even">
+<td align="left">Siskiyou</td>
+<td align="right">0.0025494</td>
+</tr>
+<tr class="odd">
+<td align="left">Humboldt</td>
+<td align="right">0.0022795</td>
+</tr>
+<tr class="even">
+<td align="left">Sierra</td>
+<td align="right">0.0019967</td>
+</tr>
+<tr class="odd">
+<td align="left">Alpine</td>
+<td align="right">0.0017715</td>
+</tr>
+<tr class="even">
+<td align="left">Plumas</td>
+<td align="right">0.0017547</td>
+</tr>
+<tr class="odd">
+<td align="left">Trinity</td>
+<td align="right">0.0005698</td>
+</tr>
+<tr class="even">
+<td align="left">Modoc</td>
+<td align="right">0.0005655</td>
 </tr>
 </tbody>
 </table>
@@ -538,16 +758,144 @@ knitr::kable(new_capita,
 </thead>
 <tbody>
 <tr class="odd">
+<td align="left">Alameda</td>
+<td align="right">0.0001532</td>
+</tr>
+<tr class="even">
+<td align="left">Alpine</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="odd">
+<td align="left">Amador</td>
+<td align="right">0.0000252</td>
+</tr>
+<tr class="even">
+<td align="left">Butte</td>
+<td align="right">0.0001141</td>
+</tr>
+<tr class="odd">
+<td align="left">Calaveras</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td align="left">Colusa</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="odd">
+<td align="left">Contra Costa</td>
+<td align="right">0.0001864</td>
+</tr>
+<tr class="even">
+<td align="left">Del Norte</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="odd">
+<td align="left">El Dorado</td>
+<td align="right">0.0000570</td>
+</tr>
+<tr class="even">
+<td align="left">Fresno</td>
+<td align="right">0.0007036</td>
+</tr>
+<tr class="odd">
+<td align="left">Glenn</td>
+<td align="right">0.0001057</td>
+</tr>
+<tr class="even">
+<td align="left">Humboldt</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="odd">
+<td align="left">Imperial</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td align="left">Inyo</td>
+<td align="right">0.0004435</td>
+</tr>
+<tr class="odd">
+<td align="left">Kern</td>
+<td align="right">0.0003377</td>
+</tr>
+<tr class="even">
+<td align="left">Kings</td>
+<td align="right">0.0006865</td>
+</tr>
+<tr class="odd">
+<td align="left">Lake</td>
+<td align="right">0.0000155</td>
+</tr>
+<tr class="even">
+<td align="left">Lassen</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="odd">
 <td align="left">Los Angeles</td>
 <td align="right">0.0001183</td>
 </tr>
 <tr class="even">
+<td align="left">Madera</td>
+<td align="right">0.0001653</td>
+</tr>
+<tr class="odd">
+<td align="left">Marin</td>
+<td align="right">0.0000927</td>
+</tr>
+<tr class="even">
+<td align="left">Mariposa</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="odd">
+<td align="left">Mendocino</td>
+<td align="right">0.0000461</td>
+</tr>
+<tr class="even">
+<td align="left">Merced</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="odd">
+<td align="left">Modoc</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td align="left">Mono</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="odd">
+<td align="left">Monterey</td>
+<td align="right">0.0007833</td>
+</tr>
+<tr class="even">
+<td align="left">Napa</td>
+<td align="right">0.0000145</td>
+</tr>
+<tr class="odd">
+<td align="left">Nevada</td>
+<td align="right">-0.0000100</td>
+</tr>
+<tr class="even">
+<td align="left">Orange</td>
+<td align="right">0.0001077</td>
+</tr>
+<tr class="odd">
+<td align="left">Placer</td>
+<td align="right">0.0000452</td>
+</tr>
+<tr class="even">
+<td align="left">Plumas</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="odd">
 <td align="left">Riverside</td>
 <td align="right">0.0001069</td>
 </tr>
+<tr class="even">
+<td align="left">Sacramento</td>
+<td align="right">0.0002403</td>
+</tr>
 <tr class="odd">
-<td align="left">Orange</td>
-<td align="right">0.0001077</td>
+<td align="left">San Benito</td>
+<td align="right">0.0001274</td>
 </tr>
 <tr class="even">
 <td align="left">San Bernardino</td>
@@ -557,23 +905,104 @@ knitr::kable(new_capita,
 <td align="left">San Diego</td>
 <td align="right">0.0001001</td>
 </tr>
+<tr class="even">
+<td align="left">San Francisco</td>
+<td align="right">0.0001531</td>
+</tr>
+<tr class="odd">
+<td align="left">San Joaquin</td>
+<td align="right">0.0002467</td>
+</tr>
+<tr class="even">
+<td align="left">San Luis Obispo</td>
+<td align="right">0.0000777</td>
+</tr>
+<tr class="odd">
+<td align="left">San Mateo</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td align="left">Santa Barbara</td>
+<td align="right">0.0000806</td>
+</tr>
+<tr class="odd">
+<td align="left">Santa Clara</td>
+<td align="right">0.0001152</td>
+</tr>
+<tr class="even">
+<td align="left">Santa Cruz</td>
+<td align="right">0.0001244</td>
+</tr>
+<tr class="odd">
+<td align="left">Shasta</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td align="left">Sierra</td>
+<td align="right">0.0003328</td>
+</tr>
+<tr class="odd">
+<td align="left">Siskiyou</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td align="left">Solano</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="odd">
+<td align="left">Sonoma</td>
+<td align="right">0.0001699</td>
+</tr>
+<tr class="even">
+<td align="left">Stanislaus</td>
+<td align="right">0.0002942</td>
+</tr>
+<tr class="odd">
+<td align="left">Sutter</td>
+<td align="right">0.0004434</td>
+</tr>
+<tr class="even">
+<td align="left">Tehama</td>
+<td align="right">0.0001076</td>
+</tr>
+<tr class="odd">
+<td align="left">Trinity</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td align="left">Tulare</td>
+<td align="right">0.0003368</td>
+</tr>
+<tr class="odd">
+<td align="left">Tuolumne</td>
+<td align="right">0.0000000</td>
+</tr>
+<tr class="even">
+<td align="left">Ventura</td>
+<td align="right">0.0000780</td>
+</tr>
+<tr class="odd">
+<td align="left">Yolo</td>
+<td align="right">0.0001224</td>
+</tr>
+<tr class="even">
+<td align="left">Yuba</td>
+<td align="right">0.0000000</td>
+</tr>
 </tbody>
 </table>
 <p>#recent 14 days data</p>
-<pre class="r"><code>#covidpcap = right_join(popcapita, casedata, by = &quot;fips&quot;)
-# = covidpcap %&gt;%
-  #select(county = county.y, Ncases, newpop, date) %&gt;%
-  #group_by(county, newpop) %&gt;%
-  #summarise(Ncases14 = sum(Ncases, na.rm = TRUE)) %&gt;%
-  #mutate(new_milion = (newpop/(newpop/100000))) %&gt;% 
-  #filter(date &gt;= max(date) - 13)-&gt; cases14</code></pre>
+<pre class="r"><code>popcapita14  = capita %&gt;% 
+  filter(date &gt; max(date) - 14, state.x == &quot;CA&quot;) %&gt;% 
+  group_by(fips)</code></pre>
 <p>#Safe Counties</p>
-<pre class="r"><code>safecounties = popcapita %&gt;%
+<pre class="r"><code>safecounties = popcapita14 %&gt;%
   group_by(county, newpop) %&gt;%
-  summarise(totalnew = sum(Ncases, na.rm = TRUE)) %&gt;% 
+  mutate(Ncases3 = cases - lag(cases)) %&gt;% 
+  summarise(totalnew = sum(Ncases3, na.rm = TRUE)) %&gt;% 
   mutate(safecountiesname = totalnew/(newpop/100000)) %&gt;% 
   filter(safecountiesname &lt; 100)</code></pre>
-<p>##results The total number of cases in California is 6.2850810^{5}, which 6527 of the population are new cases. California has 3 safe counties.</p>
+<p>##results The total number of cases in California is 6.2850810^{5}, which 6527 of the population are new cases. California has 13 safe counties.</p>
 <p>##Question 2</p>
 <pre class="r"><code>covid2 = covid %&gt;%
   filter(state %in% c(&quot;California&quot;, &quot;New York&quot;, &quot;Louisiana&quot;, &quot;Florida&quot;)) %&gt;%

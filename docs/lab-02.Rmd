@@ -51,18 +51,26 @@ knitr::kable(mnewcases,
 ```
 #Update case data based on population data
 ```{r message=FALSE, warning=FALSE}
-popcapita = pop %>%
+capita = pop %>%
   select(fips = "FIPStxt",newpop ="POP_ESTIMATE_2019",state = "State") %>%
-  right_join(casedata, by = "fips") %>%
-  mutate(cumul_cases_pcapita = (cases/newpop), new_cases_pcapita = (Ncases/newpop))
+  right_join(covid, by = "fips")
+
+  
+popcapita = capita %>% 
+  filter(state.x == "CA") %>% 
+  group_by(county) %>% 
+  mutate(Ncases2 = cases - lag(cases)) %>% 
+  mutate(cumul_cases_pcapita = (cases/newpop)) %>% 
+  mutate(new_cases_pcapita = (Ncases2/newpop))%>% 
+  filter(date == max(date))
 
 ```
 #The most cumulative cases per capita
 ```{r, message = FALSE, warning = FALSE}
 cumul_capita = popcapita %>%
-    arrange(-cumul_cases_pcapita) %>% 
-    slice_max(cases, n = 5) %>%
-    select(county, cumul_cases_pcapita)
+  slice_max(cases, n = 5) %>%
+  arrange(-cumul_cases_pcapita) %>% 
+  select(county, cumul_cases_pcapita)
 
 knitr::kable(cumul_capita,
              caption = "The most cumulative cases per capita in California Counties", 
@@ -83,25 +91,18 @@ knitr::kable(new_capita,
 ```
 #recent 14 days data
 ```{r, message = FALSE, warning = FALSE}
-select(county = county.y, Ncases, newpop, date) %>%
-  right_join(casedata, by = "fips")
-popcapita14 = covidpcap %>%
-  safe = perCap %>%
-  group_by(county, pop2019) %>%
-  summarise(total_newCases = sum(newCases, na.rm = TRUE)) %>% 
-  mutate(total_safecounties = total_newCases/(pop2019/100000)) %>% 
-  filter(total_safecounties < 100)
 
-  group_by(county, newpop) %>%
-  summarise(Ncases14 = sum(Ncases, na.rm = TRUE)) %>%
-  mutate(new_milion = (newpop/(newpop/100000))) %>% 
-  filter(date >= max(date) - 13)-> cases14
+popcapita14  = capita %>% 
+  filter(date > max(date) - 14, state.x == "CA") %>% 
+  group_by(fips)
+
 ```
 #Safe Counties
 ```{r, message = FALSE, warning = FALSE}
-safecounties = popcapita %>%
+safecounties = popcapita14 %>%
   group_by(county, newpop) %>%
-  summarise(totalnew = sum(Ncases, na.rm = TRUE)) %>% 
+  mutate(Ncases3 = cases - lag(cases)) %>% 
+  summarise(totalnew = sum(Ncases3, na.rm = TRUE)) %>% 
   mutate(safecountiesname = totalnew/(newpop/100000)) %>% 
   filter(safecountiesname < 100)
 ```
