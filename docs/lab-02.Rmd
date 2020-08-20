@@ -60,17 +60,18 @@ popcapita = capita %>%
   filter(state.x == "CA") %>% 
   group_by(county) %>% 
   mutate(Ncases2 = cases - lag(cases)) %>% 
-  mutate(cumul_cases_pcapita = (cases/newpop)) %>% 
-  mutate(new_cases_pcapita = (Ncases2/newpop))%>% 
+  mutate(cumulcasespcapita = (cases/newpop)) %>% 
+  mutate(newcasespcapita = (Ncases2/newpop))%>% 
+  ungroup() %>% 
   filter(date == max(date))
 
 ```
 #The most cumulative cases per capita
 ```{r, message = FALSE, warning = FALSE}
 cumul_capita = popcapita %>%
-  slice_max(cumul_cases_pcapita, n=5) %>%
-  arrange(-cumul_cases_pcapita) %>% 
-  select(county, cumul_cases_pcapita)
+  slice_max(cumulcasespcapita, n=5) %>%
+  arrange(-cumulcasespcapita) %>% 
+  select(county, cumulcasespcapita)
   
 knitr::kable(cumul_capita,
              caption = "The most cumulative cases per capita in California Counties", 
@@ -81,9 +82,9 @@ knitr::kable(cumul_capita,
 ```{r, message = FALSE, warning = FALSE}
 new_capita = popcapita %>%
     filter(date == max(date)) %>%
-    slice_max(new_cases_pcapita, n = 5) %>%
-    arrange(-new_cases_pcapita) %>%
-    select(county, new_cases_pcapita)
+    slice_max(newcasespcapita, n = 5) %>%
+    arrange(-newcasespcapita) %>%
+    select(county, newcasespcapita)
 
 knitr::kable(new_capita,
              caption = "The most new cases per capita in California Counties", 
