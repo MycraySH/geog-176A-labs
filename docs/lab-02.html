@@ -573,7 +573,7 @@ knitr::kable(new_capita,
 <pre class="r"><code>popcapita14  = capita %&gt;% 
   filter(date &gt; max(date) - 14, state.x == &quot;CA&quot;) %&gt;% 
   group_by(fips)</code></pre>
-<p>#Safe Counties</p>
+<p>#Safe Counties in California</p>
 <pre class="r"><code>safecounties = popcapita14 %&gt;%
   group_by(county, newpop) %&gt;%
   mutate(Ncases3 = cases - lag(cases)) %&gt;% 

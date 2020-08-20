@@ -93,13 +93,12 @@ knitr::kable(new_capita,
 ```
 #recent 14 days data
 ```{r, message = FALSE, warning = FALSE}
-
 popcapita14  = capita %>% 
   filter(date > max(date) - 14, state.x == "CA") %>% 
   group_by(fips)
 
 ```
-#Safe Counties
+#Safe Counties in California
 ```{r, message = FALSE, warning = FALSE}
 safecounties = popcapita14 %>%
   group_by(county, newpop) %>%
