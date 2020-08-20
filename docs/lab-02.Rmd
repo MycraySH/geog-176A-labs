@@ -68,7 +68,7 @@ popcapita = capita %>%
 #The most cumulative cases per capita
 ```{r, message = FALSE, warning = FALSE}
 cumul_capita = popcapita %>%
-  slice_max(cases, n = 5) %>%
+  slice_max(cumul_cases_pcapita, n = 5) %>%
   arrange(-cumul_cases_pcapita) %>% 
   select(county, cumul_cases_pcapita)
 
@@ -81,7 +81,8 @@ knitr::kable(cumul_capita,
 ```{r, message = FALSE, warning = FALSE}
 new_capita = popcapita %>%
     filter(date == max(date)) %>%
-    slice_max(cases, n = 5) %>%
+    slice_max(new_cases_pcapita, n = 5) %>%
+    arrange(-new_cases_pcapita) %>%
     select(county, new_cases_pcapita)
 
 knitr::kable(new_capita,
