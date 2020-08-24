@@ -381,11 +381,26 @@ summary {
 </div>
 
 
-<p>##Question 1 <i class="fas fa-address-card fa-3x"></i></p>
+<p>#Question 1</p>
 <p>#1.1 Define a Projection</p>
 <pre class="r"><code>#This projection will use the North America Equidistant Conic.
 
 eqdc = &#39;+proj=eqdc +lat_0=40 +lon_0=-96 +lat_1=20 +lat_2=60 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs&#39;</code></pre>
+<p>#1.2 Get USA state boundaries</p>
+<pre class="r"><code>mapdata = USAboundaries::us_states(resolution = &quot;low&quot;) %&gt;%
+  filter(!state_name %in% c(&quot;Puerto Rico&quot;, &quot;Alaska&quot;, &quot;Hawaii&quot;)) %&gt;% 
+  st_transform(eqdc)</code></pre>
+<p>#1.3 - Get country boundaries for Mexico, the United States of America, and Canada</p>
+<pre class="r"><code>country = rnaturalearth::countries110
+country_sf = st_as_sf(country) %&gt;%
+  filter(admin %in% c(&quot;Mexico&quot;,&quot;United States of America&quot;, &quot;Canada&quot;)) %&gt;%
+  st_transform(eqdc)</code></pre>
+<p>#1.4 - Get city locations from the CSV file</p>
+<pre class="r"><code>uscities = readr::read_csv(&quot;D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/uscities.csv&quot;)
+sf_uscities = st_as_sf(uscities, coords = c(&quot;lng&quot;, &quot;lat&quot;), crs = 4326) %&gt;%
+  filter(!state_name %in% c(&quot;Puerto Rico&quot;, &quot;Alaska&quot;, &quot;Hawaii&quot;))
+
+eqdc_uscities = st_transform(sf_uscities, eqdc)</code></pre>
 
 
 

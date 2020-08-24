@@ -15,7 +15,7 @@ library(readxl)
 covid = read_csv("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/covid.csv")
 pop <- read_excel("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/PopulationEstimates.xls", skip = 2)
 ```
-#Calculating the new cases in each county
+#Calculating the new cases in each counties
 ```{r,message=FALSE, warning=FALSE}
 casedata = covid %>%
   filter(state == "California") %>%
