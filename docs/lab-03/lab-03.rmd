@@ -41,8 +41,8 @@ mapdata = USAboundaries::us_states(resolution = "low") %>%
 
 #1.3 - Get country boundaries for Mexico, the United States of America, and Canada
 ```{r,message=FALSE, warning=FALSE}
-country = rnaturalearth::countries110
-country_sf = st_as_sf(country) %>%
+countries = rnaturalearth::countries110
+countries_sf = st_as_sf(countries) %>%
   filter(admin %in% c("Mexico","United States of America", "Canada")) %>%
   st_transform(eqdc)
 ```
@@ -60,19 +60,174 @@ eqdc_uscities = st_transform(sf_uscities, eqdc)
 
 #2.1 - Distance to USA Border (coastline or national) (km)
 ```{r,message=FALSE, warning=FALSE}
-usmap_union = st_union(mapdata) %>%
+usmapinunion = st_union(mapdata) %>%
+  st_cast("MULTILINESTRING")
+
+usmapincombined = st_combine(mapdata) %>%
   st_cast("MULTILINESTRING")
 
 eqdc_uscities = eqdc_uscities %>% 
-  mutate(distance_border = st_distance(eqdc_uscities, usmap_union),
+  mutate(distance_border = st_distance(eqdc_uscities, usmapinunion),
          distance_border = units::set_units(distance_border, "km"),
          distance_border = units::drop_units(distance_border))
 
 eqdc_uscities %>% 
   slice_max(distance_border, n = 5) %>%
   select(city, state_name, distance_border) %>% 
-  as.data.frame(dist_usaborder_table) %>% 
-  select(city, state_name, distance_border)
-knitr::kable(dist_usaborder_df, caption = "Cities Furthest from USA Border",
+  as.data.frame %>% 
+  select(city, state_name, distance_border)->
+  borderdis_table
+knitr::kable(borderdis_table,caption = "Cities Farthest from USA Border",
                col.names = c("city","state", "distance"))
+```
+
+#2.2 - Distance to States (km)
+```{r,message=FALSE, warning=FALSE}
+usmap_union = st_union(mapdata) %>%
+  st_cast("MULTILINESTRING")
+
+eqdc_uscities = eqdc_uscities %>% 
+  mutate(distance_state = st_distance(eqdc_uscities, usmapincombined),
+         distance_state = units::set_units(distance_state, "km"),
+         distance_state = units::drop_units(distance_state))
+
+statedis_table= eqdc_uscities %>% 
+  slice_max(distance_state, n = 5) %>%
+  select(city, state_name, distance_state) %>% 
+  as.data.frame %>% 
+  select(city, state_name, distance_state)
+
+knitr::kable(statedis_table,caption = "Cities Farthest from State Boarder",
+               col.names = c("city","state", "distance"))
+```
+
+#2.3 - Distance to Mexico (km)
+```{r,message=FALSE, warning=FALSE}
+usmap_union = st_union(mapdata) %>%
+  st_cast("MULTILINESTRING")
+
+
+eqdc_uscities = eqdc_uscities %>% 
+  mutate(distance_mexico = st_distance(eqdc_uscities, filter(countries_sf,admin == "Mexico")),
+         distance_mexico = units::set_units(distance_mexico, "km"),
+         distance_mexico = units::drop_units(distance_mexico))
+eqdc_uscities %>% 
+  slice_max(distance_mexico, n = 5) %>%
+  select(city, state_name, distance_mexico) %>% 
+  as.data.frame %>% 
+  select(city, state_name, distance_mexico)->
+  mexicodis_table
+knitr::kable(mexicodis_table,caption = "Cities Farthest from Mexico Border",
+               col.names = c("city","state", "distance"))
+```
+
+#2.4 - Distance to Canada (km)
+```{r,message=FALSE, warning=FALSE}
+usmap_union = st_union(mapdata) %>%
+  st_cast("MULTILINESTRING")
+
+
+eqdc_uscities = eqdc_uscities %>% 
+  mutate(distance_canada = st_distance(eqdc_uscities, filter(countries_sf,admin == "Canada")),
+         distance_canada = units::set_units(distance_canada, "km"),
+         distance_canada = units::drop_units(distance_canada))
+
+eqdc_uscities %>% 
+  slice_max(distance_canada, n = 5) %>%
+  select(city, state_name, distance_canada) %>% 
+  as.data.frame %>% 
+  select(city, state_name, distance_canada)->
+  canadadis_table
+knitr::kable(canadadis_table,caption = "Cities Farthest from Can Border",
+               col.names = c("city","state", "distance"))
+```
+
+#Question 3
+
+#3.1 Data
+
+```{r,message=FALSE, warning=FALSE}
+max_popu_cities = eqdc_uscities %>% 
+  slice_max(population, n = 10) 
+
+ggplot() +
+  geom_sf(data = mapdata,lty = "dashed", size = 0.3) +
+  geom_sf(data = countries_sf) +
+  geom_sf(data = usmapincombined,size = 0.3) +
+  geom_sf(data = max_popu_cities, size = 1) +
+    ggrepel::geom_label_repel(
+    data = max_popu_cities,
+    aes(label = city, geometry = geometry),
+    stat = "sf_coordinates",
+    size = 2.5)
+```
+
+#3.2 City Distance from the Border
+```{r,message=FALSE, warning=FALSE}
+ggplot()+
+  geom_sf(data = usmapinunion)+
+  geom_sf(data = borderdis_table, size= 2, color = "red")+
+  geom_sf(data = eqdc_uscities, aes(col = distance_border), lty = 3, alpha = .5) + 
+  scale_fill_gradient(low = 'blue', high = "red",name = "Distance(km)")+
+    ggrepel::geom_label_repel(
+    data = borderdis_table,
+    aes(label = city, geometry = geometry),
+    stat = "sf_coordinates",
+    size = 3) +
+  labs(title = "City Distance from the Border of the United States",
+       subtitle = "Five Cities Farthest from USA Border",
+       x = "",
+       y = "",
+       col = "Distance from USA Border (km)") +
+  theme_dark()
+```
+
+#3.3 City Distance from Nearest State
+```{r,message=FALSE, warning=FALSE}
+ggplot() +
+  geom_sf(data = usmapinunion) +
+  geom_sf(data = eqdc_uscities, aes(col = distance_state), lty = 3, alpha = .5) +
+  scale_fill_gradient(low = 'green', high = "yellow",name = "Distance(km)")+
+  geom_sf(data = statedis_table) +
+  ggrepel::geom_label_repel(
+    data = statedis_table,
+    aes(label = city, geometry = geometry),
+    stat = "sf_coordinates",
+    size = 4) +
+  labs(title = "City Distance from the Border of State",
+       subtitle = "Five Cities Farthest from State Border",
+       x = "",
+       y = "",
+       col = "Distance from State Border (km)") +
+  theme_dark() 
+```
+
+#3.4 Equidistance boundary from Mexico and Canada
+```{r,message=FALSE, warning=FALSE}
+eqdc_uscities = eqdc_uscities %>% 
+  mutate(distance_caminusmx = abs(distance_canada - distance_mexico),
+         distance_caminusmx = units::set_units(distance_caminusmx, "km"),
+         distance_caminusmx = units::drop_units(distance_caminusmx))
+
+popucities = eqdc_uscities %>%
+  filter(distance_caminusmx < 100 ) %>%
+  slice_max(population, n = 5)
+
+ggplot() +
+  geom_sf(data = usmapinunion) +
+  geom_sf(data = popucities)+
+  geom_sf(data = eqdc_uscities, aes(col = distance_caminusmx), size = .1) +
+  scale_fill_gradient(low = 'orange', high = "purple",name = "Distance(km)")+
+  gghighlight::gghighlight(as.numeric(distance_caminusmx) < 100)+
+  ggrepel::geom_label_repel(
+    data = popucities,
+    aes(label = city, geometry = geometry),
+    stat = "sf_coordinates",
+    size = 4) +
+  labs(title = "Cities' Distance from Nearest State Border",
+       subtitle = "Five Furthest Cities from Nearest State Border",
+       x = "",
+       y = "",
+       col = "Distance from State Border (km)") +
+  theme_dark() 
 ```

@@ -391,8 +391,8 @@ eqdc = &#39;+proj=eqdc +lat_0=40 +lon_0=-96 +lat_1=20 +lat_2=60 +x_0=0 +y_0=0 +d
   filter(!state_name %in% c(&quot;Puerto Rico&quot;, &quot;Alaska&quot;, &quot;Hawaii&quot;)) %&gt;% 
   st_transform(eqdc)</code></pre>
 <p>#1.3 - Get country boundaries for Mexico, the United States of America, and Canada</p>
-<pre class="r"><code>country = rnaturalearth::countries110
-country_sf = st_as_sf(country) %&gt;%
+<pre class="r"><code>countries = rnaturalearth::countries110
+countries_sf = st_as_sf(countries) %&gt;%
   filter(admin %in% c(&quot;Mexico&quot;,&quot;United States of America&quot;, &quot;Canada&quot;)) %&gt;%
   st_transform(eqdc)</code></pre>
 <p>#1.4 - Get city locations from the CSV file</p>
@@ -401,6 +401,230 @@ sf_uscities = st_as_sf(uscities, coords = c(&quot;lng&quot;, &quot;lat&quot;), c
   filter(!state_name %in% c(&quot;Puerto Rico&quot;, &quot;Alaska&quot;, &quot;Hawaii&quot;))
 
 eqdc_uscities = st_transform(sf_uscities, eqdc)</code></pre>
+<div id="question-2" class="section level1">
+<h1>Question 2</h1>
+<p>#2.1 - Distance to USA Border (coastline or national) (km)</p>
+<pre class="r"><code>usmapinunion = st_union(mapdata) %&gt;%
+  st_cast(&quot;MULTILINESTRING&quot;)
+
+usmapincombined = st_combine(mapdata) %&gt;%
+  st_cast(&quot;MULTILINESTRING&quot;)
+
+eqdc_uscities = eqdc_uscities %&gt;% 
+  mutate(distance_border = st_distance(eqdc_uscities, usmapinunion),
+         distance_border = units::set_units(distance_border, &quot;km&quot;),
+         distance_border = units::drop_units(distance_border))
+
+eqdc_uscities %&gt;% 
+  slice_max(distance_border, n = 5) %&gt;%
+  select(city, state_name, distance_border) %&gt;% 
+  as.data.frame %&gt;% 
+  select(city, state_name, distance_border)-&gt;
+  borderdis_table
+knitr::kable(borderdis_table,caption = &quot;Cities Farthest from USA Border&quot;,
+               col.names = c(&quot;city&quot;,&quot;state&quot;, &quot;distance&quot;))</code></pre>
+<table>
+<caption>Cities Farthest from USA Border</caption>
+<thead>
+<tr class="header">
+<th align="left">city</th>
+<th align="left">state</th>
+<th align="right">distance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Dresden</td>
+<td align="left">Kansas</td>
+<td align="right">1012.317</td>
+</tr>
+<tr class="even">
+<td align="left">Herndon</td>
+<td align="left">Kansas</td>
+<td align="right">1007.750</td>
+</tr>
+<tr class="odd">
+<td align="left">Hill City</td>
+<td align="left">Kansas</td>
+<td align="right">1005.147</td>
+</tr>
+<tr class="even">
+<td align="left">Atwood</td>
+<td align="left">Kansas</td>
+<td align="right">1004.734</td>
+</tr>
+<tr class="odd">
+<td align="left">Jennings</td>
+<td align="left">Kansas</td>
+<td align="right">1003.646</td>
+</tr>
+</tbody>
+</table>
+<p>#2.2 - Distance to States (km)</p>
+<pre class="r"><code>usmap_union = st_union(mapdata) %&gt;%
+  st_cast(&quot;MULTILINESTRING&quot;)
+
+eqdc_uscities = eqdc_uscities %&gt;% 
+  mutate(distance_state = st_distance(eqdc_uscities, usmapincombined),
+         distance_state = units::set_units(distance_state, &quot;km&quot;),
+         distance_state = units::drop_units(distance_state))
+
+eqdc_uscities %&gt;% 
+  slice_max(distance_state, n = 5) %&gt;%
+  select(city, state_name, distance_state) %&gt;% 
+  as.data.frame %&gt;% 
+  select(city, state_name, distance_state)-&gt;
+  statedis_table
+knitr::kable(statedis_table,caption = &quot;Cities Farthest from State Boarder&quot;,
+               col.names = c(&quot;city&quot;,&quot;state&quot;, &quot;distance&quot;))</code></pre>
+<table>
+<caption>Cities Farthest from State Boarder</caption>
+<thead>
+<tr class="header">
+<th align="left">city</th>
+<th align="left">state</th>
+<th align="right">distance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Lampasas</td>
+<td align="left">Texas</td>
+<td align="right">308.9216</td>
+</tr>
+<tr class="even">
+<td align="left">Bertram</td>
+<td align="left">Texas</td>
+<td align="right">302.8190</td>
+</tr>
+<tr class="odd">
+<td align="left">Kempner</td>
+<td align="left">Texas</td>
+<td align="right">302.5912</td>
+</tr>
+<tr class="even">
+<td align="left">Harker Heights</td>
+<td align="left">Texas</td>
+<td align="right">298.8125</td>
+</tr>
+<tr class="odd">
+<td align="left">Florence</td>
+<td align="left">Texas</td>
+<td align="right">298.6804</td>
+</tr>
+</tbody>
+</table>
+<p>#2.3 - Distance to Mexico (km)</p>
+<pre class="r"><code>usmap_union = st_union(mapdata) %&gt;%
+  st_cast(&quot;MULTILINESTRING&quot;)
+
+
+eqdc_uscities = eqdc_uscities %&gt;% 
+  mutate(distance_mexico = st_distance(eqdc_uscities, filter(countries_sf,admin == &quot;Mexico&quot;)),
+         distance_mexico = units::set_units(distance_mexico, &quot;km&quot;),
+         distance_mexico = units::drop_units(distance_mexico))
+
+eqdc_uscities %&gt;% 
+  slice_max(distance_mexico, n = 5) %&gt;%
+  select(city, state_name, distance_mexico) %&gt;% 
+  as.data.frame %&gt;% 
+  select(city, state_name, distance_mexico)-&gt;
+  statedis_table
+knitr::kable(statedis_table,caption = &quot;Cities Farthest from Mexico Border&quot;,
+               col.names = c(&quot;city&quot;,&quot;state&quot;, &quot;distance&quot;))</code></pre>
+<table>
+<caption>Cities Farthest from Mexico Border</caption>
+<thead>
+<tr class="header">
+<th align="left">city</th>
+<th align="left">state</th>
+<th align="right">distance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Caribou</td>
+<td align="left">Maine</td>
+<td align="right">3250.334</td>
+</tr>
+<tr class="even">
+<td align="left">Presque Isle</td>
+<td align="left">Maine</td>
+<td align="right">3234.570</td>
+</tr>
+<tr class="odd">
+<td align="left">Calais</td>
+<td align="left">Maine</td>
+<td align="right">3134.348</td>
+</tr>
+<tr class="even">
+<td align="left">Eastport</td>
+<td align="left">Maine</td>
+<td align="right">3125.624</td>
+</tr>
+<tr class="odd">
+<td align="left">Old Town</td>
+<td align="left">Maine</td>
+<td align="right">3048.366</td>
+</tr>
+</tbody>
+</table>
+<p>#2.4 - Distance to Canada (km)</p>
+<pre class="r"><code>usmap_union = st_union(mapdata) %&gt;%
+  st_cast(&quot;MULTILINESTRING&quot;)
+
+
+eqdc_uscities = eqdc_uscities %&gt;% 
+  mutate(distance_canada = st_distance(eqdc_uscities, filter(countries_sf,admin == &quot;Canada&quot;)),
+         distance_canada = units::set_units(distance_canada, &quot;km&quot;),
+         distance_canada = units::drop_units(distance_canada))
+
+eqdc_uscities %&gt;% 
+  slice_max(distance_canada, n = 5) %&gt;%
+  select(city, state_name, distance_canada) %&gt;% 
+  as.data.frame %&gt;% 
+  select(city, state_name, distance_canada)-&gt;
+  statedis_table
+knitr::kable(statedis_table,caption = &quot;Cities Farthest from Can Border&quot;,
+               col.names = c(&quot;city&quot;,&quot;state&quot;, &quot;distance&quot;))</code></pre>
+<table>
+<caption>Cities Farthest from Can Border</caption>
+<thead>
+<tr class="header">
+<th align="left">city</th>
+<th align="left">state</th>
+<th align="right">distance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Guadalupe Guerra</td>
+<td align="left">Texas</td>
+<td align="right">2206.455</td>
+</tr>
+<tr class="even">
+<td align="left">Sandoval</td>
+<td align="left">Texas</td>
+<td align="right">2205.641</td>
+</tr>
+<tr class="odd">
+<td align="left">Fronton</td>
+<td align="left">Texas</td>
+<td align="right">2204.784</td>
+</tr>
+<tr class="even">
+<td align="left">Fronton Ranchettes</td>
+<td align="left">Texas</td>
+<td align="right">2202.118</td>
+</tr>
+<tr class="odd">
+<td align="left">Evergreen</td>
+<td align="left">Texas</td>
+<td align="right">2202.020</td>
+</tr>
+</tbody>
+</table>
+</div>
 
 
 
