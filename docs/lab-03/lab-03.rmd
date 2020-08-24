@@ -1,0 +1,41 @@
+---
+title: "Geography 176A"
+author: "[Stone Shi](https://mycraysh.github.io/StoneGIS/)"
+subtitle: 'Lab 03: Distances and the Border Zone'
+output:
+  html_document:
+    theme: journal
+---
+```{r library,include=FALSE}
+# SPDS
+library(tidyverse)
+library(sf)
+library(units)
+
+# Data
+library(USAboundaries)
+library(rnaturalearth)
+
+# Visualization
+library(gghighlight)
+library(ggrepel)
+library(knitr)
+
+```
+
+#Question 1
+
+#1.1 Define a Projection
+```{r,message=FALSE, warning=FALSE}
+#This projection will use the North America Equidistant Conic.
+
+eqdc = '+proj=eqdc +lat_0=40 +lon_0=-96 +lat_1=20 +lat_2=60 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs'
+```
+
+#1.2 Get USA state boundaries
+```{r,message=FALSE, warning=FALSE}
+mapdata = USAboundaries::us_states(resolution = "low") %>%
+  filter(!state_name %in% c("Puerto Rico", "Alaska", "Hawaii")) %>% 
+  st_transform(eqdc)
+```
+
