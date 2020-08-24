@@ -71,12 +71,11 @@ eqdc_uscities = eqdc_uscities %>%
          distance_border = units::set_units(distance_border, "km"),
          distance_border = units::drop_units(distance_border))
 
-eqdc_uscities %>% 
+borderdis_table = eqdc_uscities %>% 
   slice_max(distance_border, n = 5) %>%
   select(city, state_name, distance_border) %>% 
   as.data.frame %>% 
-  select(city, state_name, distance_border)->
-  borderdis_table
+  select(city, state_name, distance_border)
 knitr::kable(borderdis_table,caption = "Cities Farthest from USA Border",
                col.names = c("city","state", "distance"))
 ```
@@ -229,5 +228,46 @@ ggplot() +
        x = "",
        y = "",
        col = "Distance from State Border (km)") +
+  theme_dark() 
+```
+
+#Question 4
+#4.1 Quantifing Border Zone
+```{r, warning = FALSE, message = FALSE}
+totalpop = eqdc_uscities %>%
+  select(population) %>%
+  summarise(sum(population))
+
+border_zone = eqdc_uscities  %>%
+  filter(as.numeric(distance_border <= 160))%>%
+  summarise(number_cities = n(), sumpop = sum(population), percent = 100 * (sum_pop/totalpop[1])) %>%
+  st_drop_geometry() 
+  knitr::kable(border_zone, caption = "Cities In the 100 Mile Zone of The US Boarder",
+             col.names = c("Number of Cities", "Number of People", "Percent of Population"),
+             format.args = list(big.mark = ",")) 
+```
+#4.2 Mapping Border Zone
+
+```{r, message = FALSE, warning = FALSE}
+bordermexico = eqdc_uscities %>%
+  select(city, population) %>%
+  filter(as.numeric(distance_border) <= 160) %>%
+  slice_max(population, n = 10)
+  
+ggplot() +
+  geom_sf(data = data) +
+  geom_sf(data = eqdc_uscities+
+            aes(col = as.numeric(distance_border)), size = 0.5) +
+  gghighlight::gghighlight(as.numeric(cities_eqdc$dist_border) <= 160) +
+  scale_color_gradient(low = "reddish purple", high = "red", name = "Distance (km)") +
+  geom_sf(data = highest_pop_dangerzone, size = 1) +
+  ggrepel::geom_label_repel(
+    data = highest_pop_dangerzone,
+    aes(label = city, geometry = geometry),
+    stat = "sf_coordinates",
+    size = 2) +
+   labs(title = "Cities In the 100 Mile Zone of The US Boarder",
+       x = " ",
+       y = " ") + 
   theme_dark() 
 ```
