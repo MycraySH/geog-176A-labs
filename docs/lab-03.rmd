@@ -150,7 +150,7 @@ max_popu_cities = eqdc_uscities %>%
   slice_max(population, n = 10) 
 
 ggplot() +
-  geom_sf(data = mapdata,lty = "dashed", size = 0.3) +
+  geom_sf(data = mapdata,size = 0.3, lty = 2) +
   geom_sf(data = countries_sf) +
   geom_sf(data = usmapincombined,size = 0.3) +
   geom_sf(data = max_popu_cities, size = 1) +
@@ -165,7 +165,7 @@ ggplot() +
 ```{r,message=FALSE, warning=FALSE}
 ggplot()+
   geom_sf(data = usmapinunion)+
-  geom_sf(data = eqdc_uscities, aes(col = distance_border), lty = 2, alpha = .5) + 
+  geom_sf(data = eqdc_uscities, aes(col = distance_border), lty = 1,size = 0.2) + 
   scale_color_gradient(low = 'blue', high = "red",name = "Distance(km)")+
     ggrepel::geom_label_repel(
     data = slice_max(eqdc_uscities, distance_border, n= 5),
@@ -186,9 +186,9 @@ cities33 = eqdc_uscities %>%
   slice_max(distance_state, n= 5)
 
 ggplot() +
-  geom_sf(data = usmapinunion) +
+  geom_sf(data = usmapincombined) +
   geom_sf(data = cities33, size = 3, col ="red")+
-  geom_sf(data = eqdc_uscities, aes(col = distance_state), lty = 2, alpha = .5) +
+  geom_sf(data = eqdc_uscities, aes(col = distance_state), lty = 1,size = 0.2) +
   scale_color_gradient(low = 'pink', high = "blue",name = "Distance(km)")+
   ggrepel::geom_label_repel(
     data = cities33,
@@ -219,7 +219,7 @@ ggplot() +
   geom_sf(data = usmapinunion) +
   geom_sf(data = popucities)+
   scale_color_gradient(low = 'yellow', high = "green",name = "Distance(km)")+
-  geom_sf(data = eqdc_uscities, aes(col = distance_caminusmx), size = .1)+
+  geom_sf(data = eqdc_uscities, aes(col = distance_caminusmx), size = 0.2)+
   gghighlight::gghighlight(as.numeric(distance_caminusmx) < 100)+
   ggrepel::geom_label_repel(
     data = popucities,
@@ -248,14 +248,14 @@ borderpop = border_zone %>%
 
 ggplot() +
   geom_sf(data = usmapincombined) +
-  geom_sf(data = border_zone, aes(col = distance_border), size = .1) +
+  geom_sf(data = border_zone, aes(col = distance_border), size = 0.2) +
   geom_sf(data = borderpop) +
-  scale_color_gradient(low = "yellow", high = "darkred") +
+  scale_color_gradient(low = "orange", high = "darkred") +
   ggrepel::geom_label_repel(
   data = borderpop,
   aes(label = city, geometry = geometry),
   stat = "sf_coordinates",
-  size = 2.5) +
+  size = 3) +
   labs(title = "Cities Within the 100 Miles of the US Border",
        subtitle = "10 Most Populous Cities within the 100 Miles Dange Zone",
        x = "",
@@ -264,3 +264,30 @@ ggplot() +
   theme_dark()
 ```
 
+#extra credit
+```{r, warning = FALSE, message = FALSE}
+
+borderpop_state = border_zone %>%
+  group_by(state_name) %>%
+  select(city, state_name, population) %>%
+  filter(population == max(population))
+
+#4.2 Mapping Border Zone
+
+ggplot() +
+  geom_sf(data = usmapincombined) +
+  geom_sf(data = border_zone, aes(col = distance_border), size = 0.2) +
+  geom_sf(data = borderpop) +
+  scale_color_gradient(low = "orange", high = "darkred") +
+  ggrepel::geom_label_repel(
+  data = borderpop_state,
+  aes(label = city, geometry = geometry),
+  stat = "sf_coordinates",
+  size = 2.5) +
+  labs(title = "Cities Within the 100 Miles of the US Border",
+       subtitle = "10 Most Populous Cities Per State within the 100 Miles Dange Zone",
+       x = "",
+       y = "",
+       col = "Distance from Border Zone (km)") +
+  theme_dark()
+```
