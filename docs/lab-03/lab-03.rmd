@@ -165,11 +165,10 @@ ggplot() +
 ```{r,message=FALSE, warning=FALSE}
 ggplot()+
   geom_sf(data = usmapinunion)+
-  geom_sf(data = borderdis_table, size= 2, color = "red")+
   geom_sf(data = eqdc_uscities, aes(col = distance_border), lty = 3, alpha = .5) + 
   scale_fill_gradient(low = 'blue', high = "red",name = "Distance(km)")+
     ggrepel::geom_label_repel(
-    data = borderdis_table,
+    data = slice_max(eqdc_uscities, distance_border, n= 5),
     aes(label = city, geometry = geometry),
     stat = "sf_coordinates",
     size = 3) +
@@ -187,9 +186,8 @@ ggplot() +
   geom_sf(data = usmapinunion) +
   geom_sf(data = eqdc_uscities, aes(col = distance_state), lty = 3, alpha = .5) +
   scale_fill_gradient(low = 'green', high = "yellow",name = "Distance(km)")+
-  geom_sf(data = statedis_table) +
   ggrepel::geom_label_repel(
-    data = statedis_table,
+    data = slice_max(eqdc_uscities, distance_state, n= 5),
     aes(label = city, geometry = geometry),
     stat = "sf_coordinates",
     size = 4) +
@@ -234,40 +232,14 @@ ggplot() +
 #Question 4
 #4.1 Quantifing Border Zone
 ```{r, warning = FALSE, message = FALSE}
-totalpop = eqdc_uscities %>%
-  select(population) %>%
-  summarise(sum(population))
+border_zone = eqdc_uscities %>% 
+  filter(distance_border <= 160)
 
-border_zone = eqdc_uscities  %>%
-  filter(as.numeric(distance_border <= 160))%>%
-  summarise(number_cities = n(), sumpop = sum(population), percent = 100 * (sum_pop/totalpop[1])) %>%
-  st_drop_geometry() 
-  knitr::kable(border_zone, caption = "Cities In the 100 Mile Zone of The US Boarder",
-             col.names = c("Number of Cities", "Number of People", "Percent of Population"),
-             format.args = list(big.mark = ",")) 
-```
+borderpop = border_zone %>%
+  slice_max(population, n = 1) %>% 
+  group_by(state_name)
+
 #4.2 Mapping Border Zone
-
-```{r, message = FALSE, warning = FALSE}
-bordermexico = eqdc_uscities %>%
-  select(city, population) %>%
-  filter(as.numeric(distance_border) <= 160) %>%
-  slice_max(population, n = 10)
   
-ggplot() +
-  geom_sf(data = data) +
-  geom_sf(data = eqdc_uscities+
-            aes(col = as.numeric(distance_border)), size = 0.5) +
-  gghighlight::gghighlight(as.numeric(cities_eqdc$dist_border) <= 160) +
-  scale_color_gradient(low = "reddish purple", high = "red", name = "Distance (km)") +
-  geom_sf(data = highest_pop_dangerzone, size = 1) +
-  ggrepel::geom_label_repel(
-    data = highest_pop_dangerzone,
-    aes(label = city, geometry = geometry),
-    stat = "sf_coordinates",
-    size = 2) +
-   labs(title = "Cities In the 100 Mile Zone of The US Boarder",
-       x = " ",
-       y = " ") + 
-  theme_dark() 
 ```
+
