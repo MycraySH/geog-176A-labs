@@ -1,0 +1,116 @@
+---
+title: "Geography 176A"
+author: "[Stone Shi](https://mycraysh.github.io/StoneGIS/)"
+subtitle: 'Lab 04: Tesselations, Point-in-Polygon'
+output:
+  html_document:
+    theme: journal
+---
+```{r library,include=FALSE}
+library(tidyverse)
+library(knitr)
+library(USAboundaries)
+library(sf)
+library(units)
+library(rmapshaper)
+```
+
+#Question 1
+
+#1.1
+```{r,message=FALSE, warning=FALSE}
+mapdata = USAboundaries::us_counties() %>%
+  filter(!state_name %in% c("Puerto Rico", "Alaska", "Hawaii")) %>%
+  st_transform(5070)
+
+```
+
+#1.2
+```{r,message=FALSE, warning=FALSE}
+counties_cent = st_centroid(mapdata) %>% 
+  st_combine() %>%
+  st_cast("MULTIPOINT")
+```
+
+#1.3
+```{r,message=FALSE, warning=FALSE}
+ct_voroni = st_voronoi(counties_cent) %>%
+  st_as_sf %>%
+  st_cast() %>%
+  mutate(id=1:n())
+
+ct_trian = st_triangulate(counties_cent) %>%
+  st_as_sf() %>%
+  st_cast() %>%
+  mutate(id=1:n())
+
+ct_grid_cv =st_make_grid(mapdata, n = c(70, 50)) %>%
+  st_as_sf() %>%
+  st_cast() %>%
+  mutate(id = 1:n())
+
+ct_hexagon_cv =  st_make_grid(mapdata, n = c(70, 50), square = FALSE) %>%
+  st_as_sf() %>%
+  st_cast() %>%
+  mutate(id = 1:n())
+```
+
+#1.4
+```{r,message=FALSE, warning=FALSE}
+ct_voroni= st_intersection(ct_voroni, st_union(counties_cent))
+ct_trian = st_intersection(ct_trian, st_union(counties_cent))
+```
+
+#1.5
+```{r,message=FALSE, warning=FALSE}
+mapdel = ms_simplify(mapdata, keep = 0.01)
+delnpts = mapview::npts(mapdel)
+
+ct_cent_del = st_centroid(mapdel) %>% 
+  st_combine() %>%
+  st_cast("MULTIPOINT")
+
+ct_voroni = st_voronoi(ct_cent_del) %>%
+  st_as_sf %>%
+  st_cast() %>%
+  mutate(id=1:n())
+
+ct_trian = st_triangulate(ct_cent_del) %>%
+  st_as_sf() %>%
+  st_cast() %>%
+  mutate(id=1:n())
+
+ct_grid_cv =st_make_grid(mapdel, n = c(70, 50)) %>%
+  st_as_sf() %>%
+  st_cast() %>%
+  mutate(id = 1:n())
+ct_hexagon_cv =  st_make_grid(mapdel, n = c(70, 50), square = FALSE) %>%
+  st_as_sf() %>%
+  st_cast() %>%
+  mutate(id = 1:n())
+
+ct_voroni= st_intersection(ct_voroni, st_union(ct_cent_del))
+ct_trian = st_intersection(ct_trian, st_union(ct_cent_del))
+```
+
+#1.6
+```{r,message=FALSE, warning=FALSE}
+plot_tess = function(data, title)
+  {
+  ggplot() + 
+    geom_sf(data = data, fill = "white", col = "navy", size = .2)+
+    theme_void()+
+    labs(title = title, caption = paste("This tesselation has:", nrow(data), "tiles" )) +
+    theme(plot.title = element_text(hjust = .5, color =  "navy"))
+  }
+
+
+plot_tess(data = mapdel, "Original Data of the Counties")
+
+plot_tess(data =ct_voroni, "Voroni Data of the Counties") +
+   geom_sf(data = ct_cent_del, col = "darkred", size = .2)
+
+plot_tess(data =ct_trian, "Triangulated  Data of the Counties")+
+  geom_sf(data = ct_cent_del, col = "darkred", size = .2)
+
+```
