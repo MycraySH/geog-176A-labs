@@ -95,3 +95,45 @@ plot_tess(data =ct_grid_cv, "Square Coverage of the Counties")
 
 plot_tess(data =ct_hexagon_cv, "Hexagonal Coverage of the Counties")
 ```
+#Question 2
+#2.1-2.2
+```{r,message=FALSE, warning=FALSE}
+tessellation = function(data, title) 
+  {area = st_area(data) %>% 
+    units::set_units("km2") %>%
+    units::drop_units() 
+  data_frame(title, nrow(data), mean(area), sd(area), sum(area)) }
+
+#2.3
+tess_summary = bind_rows(
+   tessellation(mapdel, "Counties"),
+   tessellation(ct_voroni, "Voroni"),
+   tessellation(ct_trian, "Triangulation"),
+   tessellation(ct_grid_cv, "Grid"),
+   tessellation(ct_hexagon_cv, "Hexagon"))
+
+#2.4
+knitr::kable(tess_summary,
+caption = "Tessellation Characteristics",
+col.names = c("Type","Numbers","Mean Area/km^2","Std Deviation Area/km^2","Covered Area/km^2"),
+format.args = list(big.mark = ","))
+
+#2.5
+#Different tessellation methods may obtain different data during calculation.
+#County tessellation is the most standard method, which provides accurate information for the programmer.
+#The Voroni tessellation is more detailed and varied when slicing the areas surrounding the center of the map.
+#
+```
+
+#Question 3
+
+#3.1
+```{r,message=FALSE, warning=FALSE}
+NID = readr::read_csv('D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/NID2019.xlsx') %>% 
+  filter(!is.na(LONGITUDE)) %>% 
+  filter(!is.na(LATITUDE))
+
+stDAM <- NID %>%
+  st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = 4326) %>%
+  st_transform(5070) 
+```
