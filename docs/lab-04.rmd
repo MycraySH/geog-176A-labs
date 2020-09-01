@@ -16,6 +16,7 @@ library(rmapshaper)
 library(readxl)
 library(ggplot2)
 library(plotrix)
+library(gghighlight)
 ```
 
 #Question 1
@@ -163,22 +164,71 @@ hexpol = point_in_polygon(stDAM,ct_hexagon_cv,"id")
 ```
 #3.4
 ```{r,message=FALSE, warning=FALSE}
-plot_in_polygon = function(data, title)
+plot_in_polygon2 = function(data, title)
   {ggplot() +
     geom_sf(data = data, aes(fill = log(n)), alpha = 1, size = .2, col = NA) +
     scale_fill_viridis_c()+
+    theme_dark()+
     theme(legend.position = 'none',
-          plot.title = element_text(face = "bold", color = "red", size = 20,hjust = .5)) +
-    theme_dark() +
+          plot.title = element_text(face = "bold", color = "black", size = 20,hjust = .5)) +
     labs(title = title,
          caption = paste0(sum(data$n), "Number of Dams"))}
 ```
 
 #3.5
 ```{r,message=FALSE, warning=FALSE}
-plot_in_polygon(oripol, "Number of Dams In Countries")
-plot_in_polygon(vorpol, "Number of Dams by Voroni Pattern")
-plot_in_polygon(trianpol, "Number of Dams by Triangle Pattern")
-plot_in_polygon(gridpol, "Number of Dams by Grid Pattern")
-plot_in_polygon(hexpol, "Number of Dams by Hexagon Pattern")
+plot_in_polygon2(oripol, "Number of Dams In Countries")
+plot_in_polygon2(vorpol, "Number of Dams by Voroni Pattern")
+plot_in_polygon2(trianpol, "Number of Dams by Triangle Pattern")
+plot_in_polygon2(gridpol, "Number of Dams by Grid Pattern")
+plot_in_polygon2(hexpol, "Number of Dams by Hexagon Pattern")
+
+#3.6
+#The influence of the tessellated surface in the visualization of point counts
+#
+```
+#Question 4
+
+#4.1-4.2
+```{r,message=FALSE, warning=FALSE}
+#The diagram of dams usage
+
+
+#Irragation(I)
+irrigation <- stDAM %>% 
+  filter(grepl("I", stDAM$PURPOSES)==TRUE)
+irripol = point_in_polygon(irrigation,ct_voroni,"id")
+plot_in_polygon2(irripol, "Areas which dams are likely used for irrigation") +
+  gghighlight::gghighlight(n > mean(n) + 1) 
+
+#Navigation
+navigation <- stDAM %>% 
+  filter(grepl("N", stDAM$PURPOSES)==TRUE)
+navipol = point_in_polygon(navigation,ct_grid_cv,"id")
+plot_in_polygon2(navipol, "Areas which dams are likely used for navigation") +
+  gghighlight::gghighlight(n > mean(n) + 1) 
+
+#Water Supply
+water <- stDAM %>% 
+  filter(grepl("S", stDAM$PURPOSES)==TRUE)
+watpol = point_in_polygon(water,ct_hexagon_cv,"id")
+plot_in_polygon2(watpol,"Areas which dams are likely used for water supply") +
+  gghighlight::gghighlight(n > mean(n) + 1) 
+#Recreation
+recreation <- stDAM %>% 
+  filter(grepl("R", stDAM$PURPOSES)==TRUE)
+recpol = point_in_polygon(recreation,ct_trian,"id")
+plot_in_polygon2(recpol, "Areas which dams are likely used for recreation") +
+  gghighlight::gghighlight(n > mean(n) + 1) 
+```
+
+#4.3
+```{r, warning = FALSE, message = FALSE}
+#The geographical distribution of dams used in different fields has its significance.
+```
+
+# Extra credit
+```{r, warning = FALSE, message = FALSE}
+
+
 ```
