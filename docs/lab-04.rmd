@@ -15,6 +15,8 @@ library(units)
 library(rmapshaper)
 library(readxl)
 library(ggplot2)
+library(leaflet)
+library(leafpop)
 library(plotrix)
 library(gghighlight)
 ```
@@ -125,8 +127,11 @@ format.args = list(big.mark = ","))
 #2.5
 #Different tessellation methods may obtain different data during calculation.
 #County tessellation is the most standard method, which provides accurate information for the programmer.
-#The Voroni tessellation is more detailed and varied when slicing the areas surrounding the center of the map.
+#The Voroni tessellation is more detailed and varied when slicing the areas surrounding the center of the map.Based on its calculation method, the Voroni tessellation can effectively analyze the regional density.
 #The triangle tessellation divide the map data into several triangles.
+#Both Grid and Hexagon tessellations divide surfaces into areas of equal area, which increase accuracy in calculating data relative to "per capita".
+#In the region of quadrilateral subdivision, only the x and y coordinates need to be specified, which means it can be used widely.
+#In these four tessellations, the hexagon tessellation can cover the most accurate surface area.
 ```
 
 #Question 3
@@ -184,7 +189,7 @@ plot_in_polygon2(gridpol, "Number of Dams by Grid Pattern")
 plot_in_polygon2(hexpol, "Number of Dams by Hexagon Pattern")
 
 #3.6
-#The influence of the tessellated surface in the visualization of point counts
+#The influence of the hegagon tessellated surface in the visualization of point counts
 #
 ```
 #Question 4
@@ -204,20 +209,20 @@ plot_in_polygon2(irripol, "Areas which dams are likely used for irrigation") +
 #Navigation
 navigation <- stDAM %>% 
   filter(grepl("N", stDAM$PURPOSES)==TRUE)
-navipol = point_in_polygon(navigation,ct_grid_cv,"id")
+navipol = point_in_polygon(navigation,ct_voroni,"id")
 plot_in_polygon2(navipol, "Areas which dams are likely used for navigation") +
   gghighlight::gghighlight(n > mean(n) + 1) 
 
 #Water Supply
 water <- stDAM %>% 
   filter(grepl("S", stDAM$PURPOSES)==TRUE)
-watpol = point_in_polygon(water,ct_hexagon_cv,"id")
+watpol = point_in_polygon(water,ct_voroni,"id")
 plot_in_polygon2(watpol,"Areas which dams are likely used for water supply") +
   gghighlight::gghighlight(n > mean(n) + 1) 
 #Recreation
 recreation <- stDAM %>% 
   filter(grepl("R", stDAM$PURPOSES)==TRUE)
-recpol = point_in_polygon(recreation,ct_trian,"id")
+recpol = point_in_polygon(recreation,ct_voroni,"id")
 plot_in_polygon2(recpol, "Areas which dams are likely used for recreation") +
   gghighlight::gghighlight(n > mean(n) + 1) 
 ```
@@ -225,10 +230,25 @@ plot_in_polygon2(recpol, "Areas which dams are likely used for recreation") +
 #4.3
 ```{r, warning = FALSE, message = FALSE}
 #The geographical distribution of dams used in different fields has its significance.
+#
 ```
 
 # Extra credit
-```{r, warning = FALSE, message = FALSE}
+```{r message=FALSE, warning=FALSE}
+missi = read_sf('D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/MajorRivers/MajorRivers.shp')
+missi = missi %>% 
+  filter(SYSTEM == "Mississippi")
 
+stDAMbig = stDAM %>%
+  filter(HAZARD == "H", grepl("C", PURPOSES)) %>%
+  group_by(STATE) %>%
+  slice_max(NID_STORAGE) %>%
+  select("DAM_NAME", "NID_STORAGE", "PURPOSES", "YEAR_COMPLETED")
 
+big_dam = st_transform(stDAMbig, 4326)
+pop_dam = leafpop::popupTable(st_drop_geometry(stDAMbig), feature.id = FALSE, row.numbers = FALSE)
+leaflet() %>% 
+  addProviderTiles(providers$CartoDB) %>% 
+  addPolylines(data = missi) %>%
+  addCircleMarkers(data = big_dam,radius = ~NID_STORAGE / 1500000, color = "red",stroke = FALSE,fillOpacity = 1, popup = ~pop_dam)
 ```
