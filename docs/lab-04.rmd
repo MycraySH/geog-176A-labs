@@ -194,15 +194,24 @@ plot_in_polygon2(hexpol, "Number of Dams by Hexagon Pattern")
 #The visualized data after the Voroni tessellation restores the original data most clearly, because its mean area and standard deviation have no difference with the original data.
 #The visual data of triangle tessellation is similar to Voroni tessellation, but the scale range of each region is smaller. This type of tessellation presents a more uniform data distribution than the Voroni. However, it has more fragmented regions.
 #Grids and hexagonal tessellations have the same mean area, which the standard deviation among these areas can be ignored. However, this tessellation delineates a pattern that lacks the detail of the original image. Both tessellations cover an area larger than the original total area of about 600,000 square kilometers.
+#Because MAUP is a source of statistical bias that can significantly impact the results of statistical hypothesis tests, the grid tessellations based on point measures cannot be chosen. As a result,I choose to use Voroni tessellation to reduce the bias of MAUP. Also, Voroni could cover the accurate area of the dams data.
 ```
 #Question 4
 
 #4.1-4.2
 ```{r,message=FALSE, warning=FALSE}
-#The diagram of dams usage
+#The usage split
+nid_classifier = data.frame(abbr = c("I","N","S","R"),
+                 purpose = c("Irrigation","Navigation","Water Supply","Recreation"))
+dam_freq <- strsplit(stDAM$PURPOSES, split = "") %>%
+  unlist() %>% 
+  table() %>% 
+  as.data.frame() %>% 
+  setNames(c("abbr", "count")) %>% 
+  left_join(nid_classifier) %>% 
+  mutate(lab = paste0(purpose, "\n(", abbr, ")"))
 
-
-#Irragation(I)
+#Irrigation(I)
 irrigation <- stDAM %>% 
   filter(grepl("I", stDAM$PURPOSES)==TRUE)
 irripol = point_in_polygon(irrigation,ct_voroni,"id")
@@ -232,8 +241,11 @@ plot_in_polygon2(recpol, "Areas which dams are likely used for recreation") +
 
 #4.3
 ```{r, warning = FALSE, message = FALSE}
-#The geographical distribution of dams used in different fields has its significance.
-#
+#The geographical distribution of dams used in different fields has its significance.The results of the dam's geographical distribution are consistent with their use.
+#Dams used for irrigation are widely distributed across the Western Plateau, the Eastern Appalachian Mountains, and the lower Mississippi River.These areas are well cultivated which need irrigation.
+#Dams used for navigation are relatively less than others,mostly located in the northeast and are used to regulate elevation differences in water levels so that ships can navigate. Ships with cargo in the Great Lakes region are very frequent.
+#Dams used for water supply are mainly distributed in populated areas of California and north east, as well as the lower Mississippi River. Water supply should be guaranteed because of their high population density in these regions.
+#Dams used for recreation are mainly located in the eastern United States, probably because they are more accessible to residents. In the Midwest, due to the terrain and climate, it is difficult for dams to be developed as recreation facilities and visited by tourists.
 ```
 
 # Extra credit
