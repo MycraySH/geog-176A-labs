@@ -127,9 +127,10 @@ format.args = list(big.mark = ","))
 #2.5
 #Different tessellation methods may obtain different data during calculation.
 #County tessellation is the most standard method, which provides accurate information for the programmer.
-#The Voroni tessellation is more detailed and varied when slicing the areas surrounding the center of the map.Based on its calculation method, the Voroni tessellation can effectively analyze the regional density.
-#The triangle tessellation divide the map data into several triangles.
-#Both Grid and Hexagon tessellations divide surfaces into areas of equal area, which increase accuracy in calculating data relative to "per capita".
+#The Voroni tessellation is more detailed and varied when slicing the areas surrounding the center of the map.Based on its calculation method, the Voroni tessellation can effectively analyze the regional density.The area that Voroni tessellation covers is equal to the original area.
+#The Triangle tessellation divide the map data into several triangles.The standard deviation of the triangle tessellation is smaller than the original and Voroni tessellation.
+#Its average area is half that of the original tessellation. Therefore, the area covered by the triangle tessellation is slightly smaller than the original area.
+#Both Grid and Hexagon tessellations divide surfaces into areas of equal area, which increase accuracy in calculating data relative to "per capita". The average area and total coverage area of these two tessellations are both larger than the original.
 #In the region of quadrilateral subdivision, only the x and y coordinates need to be specified, which means it can be used widely.
 #In these four tessellations, the hexagon tessellation can cover the most accurate surface area.
 ```
@@ -189,8 +190,10 @@ plot_in_polygon2(gridpol, "Number of Dams by Grid Pattern")
 plot_in_polygon2(hexpol, "Number of Dams by Hexagon Pattern")
 
 #3.6
-#The influence of the hegagon tessellated surface in the visualization of point counts
-#
+#The influence of the hexagon tessellated surface in the visualization of point counts is obivious. 
+#The visualized data after the Voroni tessellation restores the original data most clearly, because its mean area and standard deviation have no difference with the original data.
+#The visual data of triangle tessellation is similar to Voroni tessellation, but the scale range of each region is smaller. This type of tessellation presents a more uniform data distribution than the Voroni. However, it has more fragmented regions.
+#Grids and hexagonal tessellations have the same mean area, which the standard deviation among these areas can be ignored. However, this tessellation delineates a pattern that lacks the detail of the original image. Both tessellations cover an area larger than the original total area of about 600,000 square kilometers.
 ```
 #Question 4
 
