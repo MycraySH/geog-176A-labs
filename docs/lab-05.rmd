@@ -13,7 +13,6 @@ library(getlandsat) # keyless Landsat data (2013-2017)
 library(sf) # Vector data processing
 library(mapview) # Rapid Interactive visualization
 library(osmdata)
-library(USAboundaries)
 ```
 
 
@@ -30,3 +29,4 @@ sf_uscities = st_as_sf(uscities, coords = c("lng", "lat"), crs = 4326) %>%
   st_as_sf()
 
 ```
+
