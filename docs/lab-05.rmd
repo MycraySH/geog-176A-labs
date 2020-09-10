@@ -134,7 +134,7 @@ dim(value)
 value = na.omit(value)
 
 #Q5.2
-#The dataset has 117640 rows and 6 columns.
+#The dimensions of the extracted values tells that the dataset has been created by a matrix with 117640 rows and 6 columns. 
 
 scvalue = scale(value)
 
