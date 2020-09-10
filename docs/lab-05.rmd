@@ -39,7 +39,8 @@ st = list.files("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/d
 s = stack(st) %>% 
   setNames(c(paste0("band", 1:6)))
 
-cropper = bbwgs %>% 
+
+cropper = sf_uscities %>% 
   st_transform(crs(s))
 
 r = crop(s, cropper)
@@ -99,6 +100,8 @@ palette = colorRampPalette(c("blue","white","red"))
 plot(stack, col = palette(256))
 
 #description
+#These pictures show the same distinction between floods near river and land, but with different coloration.
+#Flood area in NDWI,MNDWI and WRI plots are depicted in red. In NDVI and SWI plots, floods are drawed in blue.
 ```
 
 # Q4.2
