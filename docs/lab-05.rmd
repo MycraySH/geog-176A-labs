@@ -119,7 +119,7 @@ flood5 = calc(swi, thresholding4)
 
 
 floodstack = stack(flood1, flood2, flood3, flood4, flood5) %>%
-  setNames(c("NDVI-Cells less than zero", "NDWI-Cells greater than zero", "MNDWI-Cells greater than zero", "WRI-Cells greater than 1", "SWI-Cells less than 5"))
+  setNames(c("NDVI", "NDWI", "MNDWI", "WRI", "SWI"))
 plot(floodstack, col = "blue")
 ```
 
@@ -159,6 +159,31 @@ plot(floodstack2, col = "blue")
 # 6.1
 ```{r message=FALSE, warning=FALSE}
 kabletable = cellStats(floodstack, sum)
-knitr::kable(kabletable, caption = "total area of the flooded cells", col.names = ("Number"))
+knitr::kable(kabletable, caption = "Total cells number of each plot", col.names = ("Number"))
+areakable = kabletable * 900
+knitr::kable(areakable, caption = "total area of the flooded cells/ m^2", col.names = c("Area"))
 ```
 
+# 6.2
+```{r message=FALSE, warning=FALSE}
+floodblues = calc(floodstack2, fun = sum) 
+plot(floodblues, col =blues9)
+
+values(floodblues) <- 
+  ifelse(values(floodblues)==0,NA, values(floodblues))
+mapview(floodblues)
+#The pixelation of maps has changed the calculation method of plot cells.
+#The reason why some cells are not even is the inaccurate projection after positioning using geographic coordinates. Some cells are segmented differently, resulting in some plot values that are not even.
+```
+
+# Extra credit
+```{r, warning = FALSE, message = FALSE}
+floodbuilding = st_point(c(-91.78945, 42.06308)) %>% 
+  st_sfc(crs = 4326) %>% 
+  st_transform(crs(floodstack2)) %>% 
+  st_sf()
+print("-91.78945, 42.06308")
+raster::extract(floodstack2, floodbuilding)
+```
+
+# All of the six maps captured the flood in this location.
