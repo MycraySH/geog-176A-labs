@@ -144,17 +144,15 @@ kmeans_raster = r$band1
 values(kmeans_raster) = kmeans12$cluster
 plot(kmeans_raster)
 
-
+plot(kmeans_raster)
 
 
 table = table(values(flood1), values(kmeans_raster))
 
-which.max(table)
-
-func_kmeans = function(x){ifelse(x == 3, 1, 0)}
+func_kmeans = function(x){ifelse(x == which.max(table), 1, NA)}
 cal_kmeans = calc(kmeans_raster, func_kmeans)
-floodstack = addLayer(floodstack, cal_kmeans)
-plot(floodstack, col = palette(256))
+floodstack2 = addLayer(floodstack, cal_kmeans)
+plot(floodstack2, col = "blue")
 ```
 
 # Question 6
