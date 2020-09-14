@@ -1,0 +1,84 @@
+---
+title: "Geography 176A"
+author: "[Stone Shi](https://mycraysh.github.io/StoneGIS/)"
+subtitle: 'Lab 06: Flood Risk in Mission Creek: Past, Present, Future'
+output:
+  html_document:
+    theme: journal
+---
+```{r setup, include=FALSE,echo =FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, out.width = "75%", fig.align = 'center')
+```
+```{r library,include=FALSE, echo =FALSE}
+library(sf)        # vector manipulation
+library(raster)    # raster manipulation
+library(fasterize) # "faster" raster
+library(whitebox)  # terrain analysis
+library(raster) # Raster Data handling
+library(tidyverse) # Data Manipulation
+library(sf) # Vector data processing
+library(mapview) # Rapid Interactive visualization
+library(rgdal)
+library(AOI)
+library(dplyr)
+# Data libraries
+library(osmdata)   # OSM API
+library(elevatr)   # Elevation  Web Tiles
+```
+
+# Collecting Data
+```{r,message=FALSE, warning=FALSE}
+#Basin boundary
+basbdr = read_sf("https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-11119750/basin")
+write_sf(basbdr, dsn = "D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/USGS-11119750.gpkg")
+#Elevation Data
+eledat_mt  = elevatr::get_elev_raster(basbdr, z = 13) %>% 
+  crop(basbdr) %>%
+  mask(basbdr)
+eledat = eledat_mt * 3.281
+writeRaster(eledat, "D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/basin_elevation_data.tif", overwrite = TRUE)
+raseledat = raster("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/basin_elevation_data.tif")
+# Buildings and river-network data
+bb = st_bbox(basbdr) %>%
+  st_as_sfc() %>% 
+  st_transform(4326)
+
+osm = osmdata::opq(bb) %>% 
+  add_osm_feature(key = 'building') %>% 
+  osmdata_sf()
+
+# Extract the railway 
+railway = osmdata::opq(bb) %>% 
+  add_osm_feature(key = 'railway', value = 'station' ) %>%
+  osmdata_sf()
+# Stream
+stream = osmdata::opq(bb) %>% 
+  add_osm_feature(key = 'waterway', value = "stream") %>%
+  osmdata_sf() 
+    
+buildingpt = oam$osm_lines %>% 
+  st_intersection(basbdr) %>%
+  st_transform(crs(basbdr)) 
+
+buildingspoly = osm$osm_polygons %>% 
+  st_intersection(basbdr) %>%
+  st_transform(crs(basbdr)) %>%
+  st_centroid()
+
+rplot = railway$osm_points %>% 
+  st_intersection(basbdr) 
+#streams data
+splot = stream$osm_lines %>% 
+  st_intersection(basbdr) 
+```
+
+#Terrain Analysis
+
+```{r,message=FALSE, warning=FALSE, echo = FALSE}
+wbt_hillshade("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/basin_elevation_data.tif", "D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/hillshade.tif")
+ras_hillshade = raster("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/hillshade.tif")
+plot(ras_hillshade, col =gray.colors(256, alpha = .5),legend = FALSE, box = FALSE,axes = FALSE)
+plot(splot$geometry, add = TRUE, col = "navy")
+plot(rplot$geometry, add = TRUE, col = "black")
+```
+
