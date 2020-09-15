@@ -15,8 +15,8 @@ library(readxl)
 covid = read_csv("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/covid.csv")
 pop <- read_excel("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/PopulationEstimates.xls", skip = 2)
 ```
-#Calculating the new cases in each counties
-```{r,message=FALSE, warning=FALSE,echo=FALSE}
+# Calculating the new cases in each counties
+```{r,message=FALSE, warning=FALSE}
 casedata = covid %>%
   filter(state == "California") %>%
   group_by(county) %>% 
@@ -26,8 +26,8 @@ casedata = covid %>%
 Nday = casedata %>% #find the most recent date
   filter(date == max(date))
 ```
-#Cumulative cases in the 5 worst counties
-``` {r, message = FALSE, warning = FALSE}
+# Cumulative cases in the 5 worst counties
+``` {r, message = FALSE, warning = FALSE,echo=FALSE}
 mcumulcases = casedata %>%
   filter(date == max(date)) %>%
   select(county, cases) %>% 
@@ -39,7 +39,7 @@ knitr::kable(mcumulcases,
              format.args = list(big.mark = ","))
 ``` 
 # New cases in the 5 worst counties
-``` {r, message = FALSE, warning = FALSE}
+``` {r, message = FALSE, warning = FALSE, echo=FALSE}
 mnewcases = Nday %>%
   select(county, Ncases) %>% 
   slice_max(Ncases, n = 5)
@@ -67,7 +67,7 @@ popcapita = capita %>%
 
 ```
 # The most cumulative cases per capita
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE,echo=FALSE}
 cumul_capita = popcapita %>%
   slice_max(cumulcasespcapita, n=5) %>%
   arrange(-cumulcasespcapita) %>% 
@@ -79,7 +79,7 @@ knitr::kable(cumul_capita,
              format.args = list(big.mark = ",")) 
 ```
 # The most New cases per capita
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE,echo=FALSE}
 new_capita = popcapita %>%
     filter(date == max(date)) %>%
     slice_max(newcasespcapita, n = 5) %>%
@@ -121,8 +121,8 @@ covid2 = covid %>%
   ungroup() %>%
   filter(NScases >= 0)
 ```
-# State level new cases per capita
-```{r, message = FALSE, warning = FALSE}
+## State level new cases per capita
+```{r, message = FALSE, warning = FALSE,echo=FALSE}
 covid2 %>% 
   ggplot(aes(x = as.Date(date),y=NScases)) +
   geom_col(aes(col = state)) +
@@ -136,8 +136,9 @@ covid2 %>%
   theme_dark() +
   theme(legend.position = "NA")
 ```
-# State level new cases
-```{r, message = FALSE, warning = FALSE}
+
+## State level new cases
+```{r, message = FALSE, warning = FALSE,echo=FALSE}
 covid2 %>% 
   ggplot(aes(x = as.Date(date), y=NScases)) +
   geom_col(aes(col = state)) +
