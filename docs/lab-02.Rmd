@@ -1,13 +1,13 @@
 ---
 title: "Geography 176A"
 author: "[Stone Shi](https://mycraysh.github.io/StoneGIS/)"
-subtitle: 'Lab 03: COVID-19 Pandemic'
+subtitle: 'Lab 02: COVID-19 Pandemic'
 output:
   html_document:
     theme: journal
 ---
-#libraries
-```{r library,include=FALSE}
+
+```{r library,include=FALSE, echo=FALSE}
 library(tidyverse)
 library(knitr)
 library(zoo)
@@ -16,7 +16,7 @@ covid = read_csv("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/
 pop <- read_excel("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/PopulationEstimates.xls", skip = 2)
 ```
 #Calculating the new cases in each counties
-```{r,message=FALSE, warning=FALSE}
+```{r,message=FALSE, warning=FALSE,echo=FALSE}
 casedata = covid %>%
   filter(state == "California") %>%
   group_by(county) %>% 
@@ -38,7 +38,7 @@ knitr::kable(mcumulcases,
              col.names = c("County", "Cumulative Cases"),
              format.args = list(big.mark = ","))
 ``` 
-#New cases in the 5 worst counties
+# New cases in the 5 worst counties
 ``` {r, message = FALSE, warning = FALSE}
 mnewcases = Nday %>%
   select(county, Ncases) %>% 
@@ -49,7 +49,7 @@ knitr::kable(mnewcases,
              col.names = c("County", "New Cases"),
              format.args = list(big.mark = ","))
 ```
-#Update case data based on population data
+# Update case data based on population data
 ```{r message=FALSE, warning=FALSE}
 capita = pop %>%
   select(fips = "FIPStxt",newpop ="POP_ESTIMATE_2019",state = "State") %>%
@@ -66,7 +66,7 @@ popcapita = capita %>%
   filter(date == max(date))
 
 ```
-#The most cumulative cases per capita
+# The most cumulative cases per capita
 ```{r, message = FALSE, warning = FALSE}
 cumul_capita = popcapita %>%
   slice_max(cumulcasespcapita, n=5) %>%
@@ -78,7 +78,7 @@ knitr::kable(cumul_capita,
              col.names = c("County", "Cumulative cases per capita"), 
              format.args = list(big.mark = ",")) 
 ```
-#The most New cases per capita
+# The most New cases per capita
 ```{r, message = FALSE, warning = FALSE}
 new_capita = popcapita %>%
     filter(date == max(date)) %>%
@@ -91,14 +91,14 @@ knitr::kable(new_capita,
              col.names = c("County", "New cases per capita"), 
              format.args = list(big.mark = ","))
 ```
-#recent 14 days data
+# recent 14 days data
 ```{r, message = FALSE, warning = FALSE}
 popcapita14  = capita %>% 
   filter(date > max(date) - 14, state.x == "CA") %>% 
   group_by(fips)
 
 ```
-#Safe Counties in California
+# Safe Counties in California
 ```{r, message = FALSE, warning = FALSE}
 safecounties = popcapita14 %>%
   group_by(county, newpop) %>%
@@ -107,10 +107,10 @@ safecounties = popcapita14 %>%
   mutate(safecountiesname = totalnew/(newpop/100000)) %>% 
   filter(safecountiesname < 100)
 ```
-##results 
+## results 
 The total number of cases in California is `r sum(Nday$cases)`, which `r sum(Nday$Ncases)` of the population are new cases. California has `r nrow(safecounties)` safe counties. 
 
-##Question 2
+## Question 2
 ```{r, message = FALSE, warning = FALSE}
 
 covid2 = covid %>%
@@ -121,7 +121,7 @@ covid2 = covid %>%
   ungroup() %>%
   filter(NScases >= 0)
 ```
-#State level new cases per capita
+# State level new cases per capita
 ```{r, message = FALSE, warning = FALSE}
 covid2 %>% 
   ggplot(aes(x = as.Date(date),y=NScases)) +
@@ -136,7 +136,7 @@ covid2 %>%
   theme_dark() +
   theme(legend.position = "NA")
 ```
-#State level new cases
+# State level new cases
 ```{r, message = FALSE, warning = FALSE}
 covid2 %>% 
   ggplot(aes(x = as.Date(date), y=NScases)) +

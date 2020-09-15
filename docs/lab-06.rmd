@@ -59,10 +59,8 @@ buildingpt = osm$osm_lines %>%
   st_intersection(basbdr) %>%
   st_transform(crs(basbdr)) 
 
-buildingspoly = osm$osm_polygons %>% 
-  st_intersection(basbdr) %>%
-  st_transform(crs(basbdr)) %>%
-  st_centroid()
+centroid = st_centroid(osm$osm_polygons) %>% 
+  st_intersection(basbdr)
 
 rplot = railway$osm_points %>% 
   st_intersection(basbdr) 
@@ -71,13 +69,50 @@ splot = stream$osm_lines %>%
   st_intersection(basbdr) 
 ```
 
-#Terrain Analysis
+# Terrain Analysis
 
+# Hillshade
 ```{r,message=FALSE, warning=FALSE, echo = FALSE}
 wbt_hillshade("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/basin_elevation_data.tif", "D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/hillshade.tif")
 ras_hillshade = raster("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/hillshade.tif")
-plot(ras_hillshade, col =gray.colors(256, alpha = .5),legend = FALSE, box = FALSE,axes = FALSE)
+plot(ras_hillshade, col =gray.colors(256, alpha = .5),legend = FALSE, box = FALSE,axes = FALSE,main = "hillshade analysis")
 plot(splot$geometry, add = TRUE, col = "navy")
 plot(rplot$geometry, add = TRUE, col = "black")
 ```
+
+# Height Above Nearest Drainage
+
+```{r,message=FALSE, warning=FALSE, echo = FALSE}
+ras_river = splot %>%
+  st_transform(5070) %>%
+  st_buffer(10) %>%
+  st_transform(crs(eledat)) %>% 
+  fasterize::fasterize(eledat) %>% 
+  writeRaster( "D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/eleriv.tif", overwrite = TRUE)
+
+wbt_breach_depressions("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/basin_elevation_data.tif", "D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/brdep.tif")
+wbt_elevation_above_stream("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/basin_elevation_data.tif","D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/eleriv.tif", "D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/eleabst.tif")
+HAND = raster("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/eleabst.tif")+3.69
+rasriv = raster("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/eleriv.tif")
+HAND[rasriv == 1] = 0
+writeRaster(HAND, "D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/handras.tif", overwrite = TRUE)
+
+```
+
+### This map looks very accurate.
+
+# 2017 Impact Assessment
+
+## Map the flood
+```{r message = FALSE, warning = FALSE, echo =FALSE}
+ras_flood = raster("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/eleabst.tif")
+offset_flood = ras_flood
+offset_flood[offset_flood > 10.02] = NA
+
+plot(hillshade, axes = FALSE, box = FALSE, col= gray.colors(256, alpha =0.5), legend=FALSE)
+plot(offset_flood, add=TRUE, legend=FALSE,col= rev(blues9))
+plot(railway$geometry, add=TRUE, col= "green", cex=1, pch=16)
+plot(hillshade, col = cols, add = TRUE, cex =0.2, pch = 16)
+```
+
 
