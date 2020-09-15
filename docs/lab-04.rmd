@@ -6,7 +6,7 @@ output:
   html_document:
     theme: journal
 ---
-```{r library,include=FALSE}
+```{r library,include=FALSE, echo=FALSE}
 library(tidyverse)
 library(knitr)
 library(USAboundaries)
@@ -21,9 +21,9 @@ library(plotrix)
 library(gghighlight)
 ```
 
-#Question 1
+# Question 1
 
-#1.1
+## 1.1
 ```{r,message=FALSE, warning=FALSE}
 mapdata = USAboundaries::us_counties() %>%
   filter(!state_name %in% c("Puerto Rico", "Alaska", "Hawaii")) %>%
@@ -34,15 +34,15 @@ delnpts = mapview::npts(mapdel)
 
 ```
 
-#1.2
+## 1.2
 ```{r,message=FALSE, warning=FALSE}
 counties_cent = st_centroid(mapdata) %>% 
   st_combine() %>%
   st_cast("MULTIPOINT")
 ```
 
-#1.3
-```{r,message=FALSE, warning=FALSE}
+## 1.3
+```{r,message=FALSE, warning=FALSE, echo=FALSE}
 countiesun = st_union(counties_cent)
 
 ct_voroni = st_voronoi(counties_cent) %>%
@@ -68,7 +68,7 @@ ct_hexagon_cv =  st_make_grid(mapdata, n = c(70, 50), square = FALSE) %>%
 ```
 
 
-#1.4 - 1.5
+## 1.4 - 1.5
 ```{r,message=FALSE, warning=FALSE}
 ct_voroni= st_intersection(ct_voroni, st_union(mapdel))
 ct_trian = st_intersection(ct_trian, st_union(mapdel))
@@ -76,8 +76,8 @@ ct_grid_cv = st_intersection(ct_grid_cv, st_union(mapdel))
 ct_hexagon_cv = st_intersection(ct_hexagon_cv, st_union(mapdel))
 ```
 
-#1.6
-```{r,message=FALSE, warning=FALSE}
+## 1.6
+```{r,message=FALSE, warning=FALSE, echo=FALSE}
 plot_tess = function(data, title)
   {
   ggplot() + 
@@ -101,30 +101,37 @@ plot_tess(data =ct_grid_cv, "Square Coverage of the Counties")
 
 plot_tess(data =ct_hexagon_cv, "Hexagonal Coverage of the Counties")
 ```
-#Question 2
-#2.1-2.2
+# Question 2
+## 2.1-2.2
 ```{r,message=FALSE, warning=FALSE}
 tessellation = function(data, title) 
   {area = st_area(data) %>% 
     units::set_units("km2") %>%
     units::drop_units() 
   data_frame(title, nrow(data), mean(area), sd(area), sum(area)) }
+```
 
-#2.3
+## 2.3
+```{r,message=FALSE, warning=FALSE}
 tess_summary = bind_rows(
    tessellation(mapdel, "Counties"),
    tessellation(ct_voroni, "Voroni"),
    tessellation(ct_trian, "Triangulation"),
    tessellation(ct_grid_cv, "Grid"),
    tessellation(ct_hexagon_cv, "Hexagon"))
+```
 
-#2.4
+## 2.4
+```{r,message=FALSE, warning=FALSE,echo=FALSE}
 knitr::kable(tess_summary,
 caption = "Tessellation Characteristics",
 col.names = c("Type","Numbers","Mean Area/km^2","Std Deviation Area/km^2","Covered Area/km^2"),
 format.args = list(big.mark = ","))
+```
 
-#2.5
+## 2.5
+```{r,message=FALSE, warning=FALSE}
+
 #Different tessellation methods may obtain different data during calculation.
 #County tessellation is the most standard method, which provides accurate information for the programmer.
 #The Voroni tessellation is more detailed and varied when slicing the areas surrounding the center of the map.Based on its calculation method, the Voroni tessellation can effectively analyze the regional density.The area that Voroni tessellation covers is equal to the original area.
@@ -135,9 +142,9 @@ format.args = list(big.mark = ","))
 #In these four tessellations, the hexagon tessellation can cover the most accurate surface area.
 ```
 
-#Question 3
+# Question 3
 
-#3.1
+## 3.1
 ```{r,message=FALSE, warning=FALSE}
 NID = read_excel('D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/NID2019.xlsx') %>% 
   filter(!is.na(LONGITUDE)) %>% 
@@ -148,7 +155,7 @@ stDAM <- NID %>%
   st_transform(5070) 
 ```
 
-#3.2
+## 3.2
 ```{r,message=FALSE, warning=FALSE}
 point_in_polygon = function(points, polygon, id)
   {st_join(polygon, points) %>%
@@ -160,7 +167,7 @@ point_in_polygon = function(points, polygon, id)
     }
 ```
 
-#3.3
+## 3.3
 ```{r,message=FALSE, warning=FALSE}
 oripol = point_in_polygon(stDAM, mapdel,"geoid")
 vorpol = point_in_polygon(stDAM, ct_voroni,"id")
@@ -168,8 +175,8 @@ trianpol = point_in_polygon(stDAM,ct_trian,"id")
 gridpol = point_in_polygon(stDAM,ct_grid_cv,"id")
 hexpol = point_in_polygon(stDAM,ct_hexagon_cv,"id")
 ```
-#3.4
-```{r,message=FALSE, warning=FALSE}
+## 3.4
+```{r,message=FALSE, warning=FALSE,echo=FALSE,echo=FALSE}
 plot_in_polygon2 = function(data, title)
   {ggplot() +
     geom_sf(data = data, aes(fill = log(n)), alpha = 1, size = .2, col = NA) +
@@ -181,25 +188,29 @@ plot_in_polygon2 = function(data, title)
          caption = paste0(sum(data$n), "Number of Dams"))}
 ```
 
-#3.5
-```{r,message=FALSE, warning=FALSE}
+## 3.5
+```{r,message=FALSE, warning=FALSE,echo=FALSE}
 plot_in_polygon2(oripol, "Number of Dams In Countries")
 plot_in_polygon2(vorpol, "Number of Dams by Voroni Pattern")
 plot_in_polygon2(trianpol, "Number of Dams by Triangle Pattern")
 plot_in_polygon2(gridpol, "Number of Dams by Grid Pattern")
 plot_in_polygon2(hexpol, "Number of Dams by Hexagon Pattern")
+```
 
-#3.6
+
+## 3.6
+```{r,message=FALSE, warning=FALSE}
 #The influence of the hexagon tessellated surface in the visualization of point counts is obivious. 
 #The visualized data after the Voroni tessellation restores the original data most clearly, because its mean area and standard deviation have no difference with the original data.
 #The visual data of triangle tessellation is similar to Voroni tessellation, but the scale range of each region is smaller. This type of tessellation presents a more uniform data distribution than the Voroni. However, it has more fragmented regions.
 #Grids and hexagonal tessellations have the same mean area, which the standard deviation among these areas can be ignored. However, this tessellation delineates a pattern that lacks the detail of the original image. Both tessellations cover an area larger than the original total area of about 600,000 square kilometers.
 #Because MAUP is a source of statistical bias that can significantly impact the results of statistical hypothesis tests, the grid tessellations based on point measures cannot be chosen. As a result,I choose to use Voroni tessellation to reduce the bias of MAUP. Also, Voroni could cover the accurate area of the dams data.
 ```
-#Question 4
 
-#4.1-4.2
-```{r,message=FALSE, warning=FALSE}
+# Question 4
+
+## 4.1-4.2
+```{r,message=FALSE, warning=FALSE, echo=FALSE}
 #The usage split
 nid_classifier = data.frame(abbr = c("I","N","S","R"),
                  purpose = c("Irrigation","Navigation","Water Supply","Recreation"))
@@ -239,7 +250,7 @@ plot_in_polygon2(recpol, "Areas which dams are likely used for recreation") +
   gghighlight::gghighlight(n > mean(n) + 1) 
 ```
 
-#4.3
+## 4.3
 ```{r, warning = FALSE, message = FALSE}
 #The geographical distribution of dams used in different fields has its significance.The results of the dam's geographical distribution are consistent with their use.
 #Dams used for irrigation are widely distributed across the Western Plateau, the Eastern Appalachian Mountains, and the lower Mississippi River.These areas are well cultivated which need irrigation.
@@ -249,7 +260,7 @@ plot_in_polygon2(recpol, "Areas which dams are likely used for recreation") +
 ```
 
 # Extra credit
-```{r message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE, echo=FALSE}
 missi = read_sf('D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/MajorRivers/MajorRivers.shp')
 missi = missi %>% 
   filter(SYSTEM == "Mississippi")
