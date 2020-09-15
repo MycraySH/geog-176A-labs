@@ -29,8 +29,7 @@ library(elevatr)   # Elevation  Web Tiles
 # Collecting Data
 ```{r,message=FALSE, warning=FALSE}
 #Basin boundary
-basbdr = read_sf("https://labs.waterdata.usgs.gov/api/nldi/linked-data/nwissite/USGS-11119750/basin")
-write_sf(basbdr, dsn = "D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/USGS-11119750.gpkg")
+basbdr = read_sf("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-labs/data/USGS-11119750.gpkg")
 #Elevation Data
 eledat_mt  = elevatr::get_elev_raster(basbdr, z = 13) %>% 
   crop(basbdr) %>%
@@ -43,20 +42,20 @@ bb = st_bbox(basbdr) %>%
   st_as_sfc() %>% 
   st_transform(4326)
 
-osm = osmdata::opq(bb) %>% 
+osm = osmdata::opq(basbdr) %>% 
   add_osm_feature(key = 'building') %>% 
   osmdata_sf()
 
 # Extract the railway 
-railway = osmdata::opq(bb) %>% 
-  add_osm_feature(key = 'railway', value = 'station' ) %>%
+railway = osmdata::opq(basbdr) %>% 
+  add_osm_feature('railway', 'station' ) %>%
   osmdata_sf()
 # Stream
-stream = osmdata::opq(bb) %>% 
-  add_osm_feature(key = 'waterway', value = "stream") %>%
+stream = osmdata::opq(basbdr) %>% 
+  add_osm_feature('waterway', "stream") %>%
   osmdata_sf() 
     
-buildingpt = oam$osm_lines %>% 
+buildingpt = osm$osm_lines %>% 
   st_intersection(basbdr) %>%
   st_transform(crs(basbdr)) 
 
