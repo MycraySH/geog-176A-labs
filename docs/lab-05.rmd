@@ -6,7 +6,7 @@ output:
   html_document:
     theme: journal
 ---
-```{r library,include=FALSE}
+```{r library,include=FALSE,echo=FALSE}
 library(raster) # Raster Data handling
 library(tidyverse) # Data Manipulation
 library(getlandsat) # keyless Landsat data (2013-2017)
@@ -58,7 +58,7 @@ r = crop(s, cropper)
 ```
 
 
-```{r,message=FALSE, warning=FALSE}
+```{r,message=FALSE, warning=FALSE,echo=FALSE}
 
 #R-G-B (natural color)
 par(mfrow = c(1,2))
@@ -82,7 +82,7 @@ plotRGB(r, r = 5, g = 7, b = 1,stretch = "hist")
 
 # Question 4
 # Q4.1
-```{r,message=FALSE, warning=FALSE}
+```{r,message=FALSE, warning=FALSE,echo=FALSE}
 ndvi = (r$band5- r$band4) / (r$band5 + r$band4)
 
 ndwi = (r$band3 - r$band5) / (r$band3 + r$band5)
@@ -105,7 +105,7 @@ plot(stack, col = palette(256))
 ```
 
 # Q4.2
-```{r,message=FALSE, warning=FALSE}
+```{r,message=FALSE, warning=FALSE,echo=FALSE}
 thresholding1 = function(x){ifelse(x <= 0, 1, NA)}
 thresholding2 = function(x){ifelse(x >= 0, 1, NA)}
 thresholding3 = function(x){ifelse(x >= 1, 1, NA)}
@@ -124,7 +124,7 @@ plot(floodstack, col = "blue")
 ```
 
 # Question 5
-```{r,message=FALSE, warning=FALSE}
+```{r,message=FALSE, warning=FALSE,echo=FALSE}
 set.seed(09072020)
 
 value = getValues(r)
@@ -157,7 +157,7 @@ plot(floodstack2, col = "blue")
 
 # Question 6
 # 6.1
-```{r message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE,echo=FALSE}
 kabletable = cellStats(floodstack, sum)
 knitr::kable(kabletable, caption = "Total cells number of each plot", col.names = ("Number"))
 areakable = kabletable * 900
@@ -165,7 +165,7 @@ knitr::kable(areakable, caption = "total area of the flooded cells/ m^2", col.na
 ```
 
 # 6.2
-```{r message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE,echo=FALSE}
 floodblues = calc(floodstack2, fun = sum) 
 plot(floodblues, col =blues9)
 
@@ -177,7 +177,7 @@ mapview(floodblues)
 ```
 
 # Extra credit
-```{r, warning = FALSE, message = FALSE}
+```{r, warning = FALSE, message = FALSE,echo=FALSE}
 floodbuilding = st_point(c(-91.78945, 42.06308)) %>% 
   st_sfc(crs = 4326) %>% 
   st_transform(crs(floodstack2)) %>% 
@@ -186,4 +186,4 @@ print("-91.78945, 42.06308")
 raster::extract(floodstack2, floodbuilding)
 ```
 
-# All of the six maps captured the flood in this location.
+### All of the six maps captured the flood in this location.
