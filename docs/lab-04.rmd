@@ -6,6 +6,10 @@ output:
   html_document:
     theme: journal
 ---
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, out.width = "75%", fig.align = 'center')
+```
+
 ```{r library,include=FALSE, echo=FALSE}
 library(tidyverse)
 library(knitr)
@@ -277,4 +281,5 @@ leaflet() %>%
   addProviderTiles(providers$CartoDB) %>% 
   addPolylines(data = missi) %>%
   addCircleMarkers(data = big_dam,radius = ~NID_STORAGE / 1500000, color = "red",stroke = FALSE,fillOpacity = 1, popup = ~pop_dam)
+
 ```
