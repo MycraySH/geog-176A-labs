@@ -6,7 +6,7 @@ output:
   html_document:
     theme: journal
 ---
-```{r setup, include=FALSE,echo =FALSE}
+```{r setup, include=FALSE,message = FALSE,echo =FALSE}
 knitr::opts_chunk$set(warning = FALSE, message = FALSE, out.width = "75%", fig.align = 'center')
 ```
 ```{r library,include=FALSE, echo =FALSE}
@@ -109,10 +109,6 @@ ras_flood = raster("D:/LifeInUCSB/Study/GEOG176A/week2/assignment5/geog-176A-lab
 offset_flood = ras_flood
 offset_flood[offset_flood > 10.02] = NA
 
-plot(hillshade, axes = FALSE, box = FALSE, col= gray.colors(256, alpha =0.5), legend=FALSE)
-plot(offset_flood, add=TRUE, legend=FALSE,col= rev(blues9))
-plot(railway$geometry, add=TRUE, col= "green", cex=1, pch=16)
-plot(hillshade, col = cols, add = TRUE, cex =0.2, pch = 16)
 ```
 
 
