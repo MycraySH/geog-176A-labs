@@ -15,7 +15,9 @@ library(mapview) # Rapid Interactive visualization
 library(osmdata)
 ```
 
-
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, out.width = "75%", fig.align = 'center')
+```
 # Question 1
 
 ```{r,message=FALSE, warning=FALSE}
